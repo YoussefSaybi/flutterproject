@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
-import 'common_widgets.dart';
 
 class MainShell extends StatelessWidget {
   const MainShell({super.key, required this.navigationShell});
@@ -20,60 +18,51 @@ class MainShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final index = navigationShell.currentIndex;
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.white,
-          border: Border(top: BorderSide(color: AppColors.border)),
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x14000000),
-              blurRadius: 12,
-              offset: Offset(0, -2),
-            ),
-          ],
-        ),
+      bottomNavigationBar: Material(
+        color: AppColors.cream,
+        elevation: 0,
         child: SafeArea(
           top: false,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: SizedBox(
+            height: 64,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _NavItem(
-                  asset: AppAssets.iconHome,
-                  activeAsset: AppAssets.iconHomeActive,
+                  icon: Icons.home_rounded,
+                  outlineIcon: Icons.home_outlined,
                   label: 'Accueil',
-                  selected: navigationShell.currentIndex == 0,
+                  selected: index == 0,
                   onTap: () => _onTap(0),
                 ),
                 _NavItem(
-                  asset: AppAssets.iconMap,
-                  activeAsset: AppAssets.iconMapActive,
+                  icon: Icons.map_rounded,
+                  outlineIcon: Icons.map_outlined,
                   label: 'Carte',
-                  selected: navigationShell.currentIndex == 1,
+                  selected: index == 1,
                   onTap: () => _onTap(1),
                 ),
                 _NavItem(
-                  asset: AppAssets.iconParcours,
-                  activeAsset: AppAssets.iconParcoursActive,
+                  icon: Icons.alt_route_rounded,
+                  outlineIcon: Icons.alt_route_rounded,
                   label: 'Parcours',
-                  selected: navigationShell.currentIndex == 2,
+                  selected: index == 2,
                   onTap: () => _onTap(2),
                 ),
                 _NavItem(
-                  asset: AppAssets.iconScanner,
-                  activeAsset: AppAssets.iconScannerActive,
+                  icon: Icons.qr_code_scanner_rounded,
+                  outlineIcon: Icons.qr_code_scanner_rounded,
                   label: 'Scanner',
-                  selected: navigationShell.currentIndex == 3,
+                  selected: index == 3,
                   onTap: () => _onTap(3),
                 ),
                 _NavItem(
-                  asset: AppAssets.iconProfile,
-                  activeAsset: AppAssets.iconProfileActive,
+                  icon: Icons.person_rounded,
+                  outlineIcon: Icons.person_outline_rounded,
                   label: 'Profil',
-                  selected: navigationShell.currentIndex == 4,
+                  selected: index == 4,
                   onTap: () => _onTap(4),
                 ),
               ],
@@ -87,15 +76,15 @@ class MainShell extends StatelessWidget {
 
 class _NavItem extends StatelessWidget {
   const _NavItem({
-    required this.asset,
-    required this.activeAsset,
+    required this.icon,
+    required this.outlineIcon,
     required this.label,
     required this.selected,
     required this.onTap,
   });
 
-  final String asset;
-  final String activeAsset;
+  final IconData icon;
+  final IconData outlineIcon;
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -103,25 +92,27 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = selected ? AppColors.gold : AppColors.navy;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        splashColor: AppColors.gold.withValues(alpha: 0.12),
+        highlightColor: Colors.transparent,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            PackIcon(
-              selected ? activeAsset : asset,
+            Icon(
+              selected ? icon : outlineIcon,
               size: 26,
-              color: selected ? AppColors.gold : AppColors.navy,
+              color: color,
             ),
             const SizedBox(height: 4),
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: AppFonts.dmSans(
                 fontSize: 11,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                 color: color,
               ),
             ),

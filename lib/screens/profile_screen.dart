@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../data/mock_data.dart';
 import '../navigation/app_nav.dart';
 import '../services/auth_service.dart';
 import '../theme/app_assets.dart';
@@ -15,41 +16,60 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = AuthService.instance.currentUser;
     final name = user?.name ?? 'Mohamed Azmi';
-    final email = user?.email ?? 'azmi.heni@gmail.com';
-    final city = (user?.city.isNotEmpty ?? false) ? user!.city : 'Sfax, Tunisie';
     final top = MediaQuery.paddingOf(context).top;
+    final favorisCount = MockData.favorites.length;
 
     return Scaffold(
       backgroundColor: AppColors.cream,
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
-            child: Container(
-              color: AppColors.navy,
-              padding: EdgeInsets.fromLTRB(16, top + 10, 16, 36),
-              child: Column(
+            child: SizedBox(
+              height: top + 168,
+              child: Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  Row(
-                    children: [
-                      const Expanded(child: EcoLogo(compact: true)),
-                      SoftCircleButton(
-                        icon: Icons.settings_outlined,
-                        background: Colors.transparent,
-                        foreground: AppColors.gold,
-                        onPressed: () => AppNav.openEditProfile(context),
-                      ),
-                    ],
+                  Positioned.fill(
+                    child: Container(color: AppColors.navy),
                   ),
-                  const SizedBox(height: 18),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Mon profil',
-                      style: AppFonts.playfair(
-                        color: AppColors.white,
-                        fontSize: 30,
-                        fontWeight: FontWeight.w700,
+                  Positioned(
+                    left: -10,
+                    top: top + 20,
+                    child: Opacity(
+                      opacity: 0.18,
+                      child: PackIcon(
+                        AppAssets.iconPalm,
+                        size: 120,
+                        color: AppColors.gold,
                       ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(16, top + 10, 16, 48),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Expanded(child: EcoLogo(compact: true, height: 44)),
+                            SoftCircleButton(
+                              icon: Icons.settings_outlined,
+                              background: Colors.transparent,
+                              foreground: AppColors.gold,
+                              onPressed: () => AppNav.openEditProfile(context),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 22),
+                        Text(
+                          'Mon profil',
+                          style: AppFonts.playfair(
+                            color: AppColors.white,
+                            fontSize: 30,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -58,7 +78,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           SliverToBoxAdapter(
             child: Transform.translate(
-              offset: const Offset(0, -22),
+              offset: const Offset(0, -28),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 18),
                 child: Column(
@@ -98,27 +118,12 @@ class ProfileScreen extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.mail_outline, size: 14, color: AppColors.teal),
-                                      const SizedBox(width: 4),
-                                      Expanded(
-                                        child: Text(
-                                          email,
-                                          style: AppFonts.dmSans(fontSize: 12, color: AppColors.teal),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.place_outlined, size: 14, color: AppColors.teal),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        city,
-                                        style: AppFonts.dmSans(fontSize: 12, color: AppColors.teal),
-                                      ),
-                                    ],
+                                  Text(
+                                    'Explorateur des îles',
+                                    style: AppFonts.dmSans(
+                                      fontSize: 13,
+                                      color: AppColors.textSecondary,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -131,13 +136,13 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 14),
                     Row(
                       children: [
-                        _Stat(icon: AppAssets.iconPinGold, value: '12', label: 'Lieux visités'),
+                        const _Stat(icon: AppAssets.iconPinGold, value: '12', label: 'Lieux'),
                         const SizedBox(width: 8),
-                        _Stat(icon: AppAssets.iconParcoursActive, value: '3', label: 'Parcours'),
+                        const _Stat(icon: AppAssets.iconParcoursActive, value: '3', label: 'Parcours'),
                         const SizedBox(width: 8),
                         _Stat(
                           icon: AppAssets.iconHeartActive,
-                          value: '5',
+                          value: '$favorisCount',
                           label: 'Favoris',
                           onTap: () => AppNav.openFavorites(context),
                         ),
@@ -233,8 +238,15 @@ class _Stat extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
           decoration: BoxDecoration(
-            color: AppColors.creamDark,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Column(
             children: [

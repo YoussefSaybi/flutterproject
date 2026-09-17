@@ -16,8 +16,11 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  bool _navigated = false;
+
   void _go() {
-    if (!mounted) return;
+    if (!mounted || _navigated) return;
+    _navigated = true;
     context.go(AuthService.instance.isLoggedIn ? '/home' : '/onboarding');
   }
 
@@ -33,6 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final bottom = MediaQuery.paddingOf(context).bottom;
     return Scaffold(
       body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: _go,
         child: Stack(
           fit: StackFit.expand,
@@ -41,7 +45,7 @@ class _SplashScreenState extends State<SplashScreen> {
             SafeArea(
               child: Column(
                 children: [
-                  const Spacer(flex: 2),
+                  const Spacer(flex: 1),
                   const EcoLogo(height: 96),
                   const SizedBox(height: 12),
                   Text(
@@ -52,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const Spacer(flex: 3),
+                  const Spacer(flex: 4),
                   Text(
                     'Méliès',
                     style: AppFonts.greatVibes(color: AppColors.gold, fontSize: 40),
@@ -61,7 +65,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   Text(
                     'SOCIÉTÉ DE PRODUCTION',
                     style: AppFonts.dmSans(
-                      color: AppColors.white,
+                      color: AppColors.gold,
                       fontSize: 10,
                       letterSpacing: 2.2,
                       fontWeight: FontWeight.w500,

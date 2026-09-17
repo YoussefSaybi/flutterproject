@@ -23,12 +23,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
+  void _goTo(int page) {
+    _controller.animateToPage(
+      page,
+      duration: const Duration(milliseconds: 340),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
   void _next() {
     if (_index < 2) {
-      _controller.nextPage(
-        duration: const Duration(milliseconds: 340),
-        curve: Curves.easeOutCubic,
-      );
+      _goTo(_index + 1);
     } else {
       context.go('/login');
     }
@@ -40,16 +45,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final bottom = MediaQuery.paddingOf(context).bottom;
     return Scaffold(
-      body: Stack(
+      backgroundColor: AppColors.cream,
+      body: PageView(
+        controller: _controller,
+        onPageChanged: (i) => setState(() => _index = i),
         children: [
-          PageView(
-            controller: _controller,
-            onPageChanged: (i) => setState(() => _index = i),
-            children: [
-              _OnboardingPage1(bottom: bottom, onNext: _next),
-              _OnboardingPage2(bottom: bottom, onNext: _next, onSkip: _skip),
-              _OnboardingPage3(bottom: bottom, onStart: _next, onSkip: _skip),
-            ],
+          _OnboardingPage1(bottom: bottom, onNext: _next, onDotTap: _goTo),
+          _OnboardingPage2(
+            bottom: bottom,
+            onNext: _next,
+            onSkip: _skip,
+            onDotTap: _goTo,
+          ),
+          _OnboardingPage3(
+            bottom: bottom,
+            onStart: _next,
+            onSkip: _skip,
+            onDotTap: _goTo,
           ),
         ],
       ),
@@ -58,9 +70,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 }
 
 class _Dots extends StatelessWidget {
-  const _Dots({required this.index, this.dark = false});
+  const _Dots({
+    required this.index,
+    required this.onTap,
+    this.overPhoto = false,
+  });
+
   final int index;
-  final bool dark;
+  final ValueChanged<int> onTap;
+  /// When true, inactive dots are light so they read on dark photo vignette.
+  final bool overPhoto;
 
   @override
   Widget build(BuildContext context) {
@@ -68,17 +87,24 @@ class _Dots extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(3, (i) {
         final active = i == index;
-        return Container(
-          width: 8,
-          height: 8,
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: active
-                ? AppColors.gold
-                : (dark
-                    ? AppColors.border
-                    : AppColors.white.withValues(alpha: 0.55)),
+        return GestureDetector(
+          onTap: () => onTap(i),
+          behavior: HitTestBehavior.opaque,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: active ? 9 : 8,
+              height: active ? 9 : 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: active
+                    ? AppColors.gold
+                    : (overPhoto
+                        ? AppColors.white.withValues(alpha: 0.55)
+                        : const Color(0xFFD0D5D8)),
+              ),
+            ),
           ),
         );
       }),
@@ -86,8 +112,9 @@ class _Dots extends StatelessWidget {
   }
 }
 
-class _SkipButton extends StatelessWidget {
-  const _SkipButton({required this.onSkip});
+/// Pill-outline "Passer" — white text + thin white border (screens 2 & 3 only).
+class _SkipPill extends StatelessWidget {
+  const _SkipPill({required this.onSkip});
   final VoidCallback onSkip;
 
   @override
@@ -96,49 +123,54 @@ class _SkipButton extends StatelessWidget {
       onPressed: onSkip,
       style: TextButton.styleFrom(
         foregroundColor: AppColors.white,
-        side: BorderSide(color: AppColors.white.withValues(alpha: 0.7)),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        side: BorderSide(color: AppColors.white.withValues(alpha: 0.9), width: 1),
+        shape: const StadiumBorder(),
       ),
-      child: Text('Passer', style: AppFonts.dmSans(fontWeight: FontWeight.w600, fontSize: 13)),
+      child: Text(
+        'Passer',
+        style: AppFonts.dmSans(
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
+          color: AppColors.white,
+        ),
+      ),
     );
   }
 }
 
-/// Page 1 — full scenic bg, navy copy, bottom CTA (matches onboarding_1).
+/// Screen 1 — logo + left copy on cream; photo flush L/R/bottom with
+/// rounded top; dots + Suivant overlaid on a bottom vignette.
 class _OnboardingPage1 extends StatelessWidget {
-  const _OnboardingPage1({required this.bottom, required this.onNext});
+  const _OnboardingPage1({
+    required this.bottom,
+    required this.onNext,
+    required this.onDotTap,
+  });
+
   final double bottom;
   final VoidCallback onNext;
+  final ValueChanged<int> onDotTap;
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        Image.asset(AppAssets.bgBoat, fit: BoxFit.cover),
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.white.withValues(alpha: 0.35),
-                Colors.white.withValues(alpha: 0.05),
-                Colors.white.withValues(alpha: 0.55),
-              ],
-              stops: const [0.0, 0.45, 1.0],
-            ),
-          ),
-        ),
-        SafeArea(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(28, 16, 28, 24 + bottom),
+    final topPad = MediaQuery.paddingOf(context).top;
+    return ColoredBox(
+      color: AppColors.cream,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(28, topPad + 12, 28, 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Center(child: EcoLogo(height: 64)),
-                const SizedBox(height: 36),
+                const Center(
+                  child: EcoLogo(height: 56, showSubtitle: true),
+                ),
+                const SizedBox(height: 28),
                 Text(
                   'Découvrez Kerkennah autrement',
                   textAlign: TextAlign.left,
@@ -146,42 +178,92 @@ class _OnboardingPage1 extends StatelessWidget {
                     fontSize: 30,
                     fontWeight: FontWeight.w700,
                     color: AppColors.navy,
-                    height: 1.2,
+                    height: 1.18,
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 Text(
                   'Explorez un patrimoine riche grâce à la réalité augmentée et des contenus immersifs.',
                   textAlign: TextAlign.left,
                   style: AppFonts.dmSans(
-                    fontSize: 15,
-                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
                     height: 1.45,
                   ),
                 ),
-                const Spacer(),
-                const Center(child: _Dots(index: 0, dark: true)),
-                const SizedBox(height: 18),
-                PrimaryButton(label: 'Suivant', onPressed: onNext),
+                const SizedBox(height: 20),
               ],
             ),
           ),
-        ),
-      ],
+          Expanded(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(28),
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.asset(
+                        AppAssets.bgBoat,
+                        fit: BoxFit.cover,
+                        alignment: const Alignment(0, -0.15),
+                      ),
+                      // Bottom vignette so dots + white button label stay legible
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withValues(alpha: 0.15),
+                              Colors.black.withValues(alpha: 0.55),
+                            ],
+                            stops: const [0.45, 0.72, 1.0],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  left: 24,
+                  right: 24,
+                  bottom: 18 + bottom,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _Dots(index: 0, onTap: onDotTap, overPhoto: true),
+                      const SizedBox(height: 14),
+                      PrimaryButton(label: 'Suivant', onPressed: onNext),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-/// Page 2 — QR frame mid-screen + cream bottom sheet (matches onboarding_2).
+/// Screen 2 — full-bleed photo + Passer pill + bottom cream card.
 class _OnboardingPage2 extends StatelessWidget {
   const _OnboardingPage2({
     required this.bottom,
     required this.onNext,
     required this.onSkip,
+    required this.onDotTap,
   });
+
   final double bottom;
   final VoidCallback onNext;
   final VoidCallback onSkip;
+  final ValueChanged<int> onDotTap;
 
   @override
   Widget build(BuildContext context) {
@@ -189,7 +271,7 @@ class _OnboardingPage2 extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         Image.asset(AppAssets.bgVillage, fit: BoxFit.cover),
-        Container(color: Colors.black.withValues(alpha: 0.12)),
+        Container(color: Colors.black.withValues(alpha: 0.14)),
         SafeArea(
           bottom: false,
           child: Column(
@@ -199,27 +281,24 @@ class _OnboardingPage2 extends StatelessWidget {
                 child: Row(
                   children: [
                     const SizedBox(width: 72),
-                    const Expanded(child: EcoLogo(height: 52)),
-                    _SkipButton(onSkip: onSkip),
+                    const Expanded(
+                      child: EcoLogo(
+                        compact: true,
+                        height: 44,
+                        showSubtitle: false,
+                      ),
+                    ),
+                    _SkipPill(onSkip: onSkip),
                   ],
                 ),
               ),
-              const Spacer(flex: 2),
-              const _QrFrameIllustration(),
-              const Spacer(flex: 3),
+              const Spacer(),
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.fromLTRB(24, 28, 24, 22 + bottom),
-                decoration: BoxDecoration(
+                padding: EdgeInsets.fromLTRB(24, 28, 24, 20 + bottom),
+                decoration: const BoxDecoration(
                   color: AppColors.cream,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      blurRadius: 20,
-                      offset: const Offset(0, -4),
-                    ),
-                  ],
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(36)),
                 ),
                 child: Column(
                   children: [
@@ -228,10 +307,13 @@ class _OnboardingPage2 extends StatelessWidget {
                       height: 56,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.gold.withValues(alpha: 0.15),
+                        color: AppColors.white,
                         border: Border.all(color: AppColors.gold, width: 1.5),
                       ),
-                      child: const PackIcon(AppAssets.iconLandmarkGold, size: 28),
+                      child: const PackIcon(
+                        AppAssets.iconLandmarkGold,
+                        size: 28,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -253,9 +335,9 @@ class _OnboardingPage2 extends StatelessWidget {
                         height: 1.4,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    const _Dots(index: 1, dark: true),
                     const SizedBox(height: 18),
+                    _Dots(index: 1, onTap: onDotTap),
+                    const SizedBox(height: 14),
                     PrimaryButton(label: 'Suivant', onPressed: onNext),
                   ],
                 ),
@@ -268,52 +350,19 @@ class _OnboardingPage2 extends StatelessWidget {
   }
 }
 
-class _QrFrameIllustration extends StatelessWidget {
-  const _QrFrameIllustration();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 200,
-      height: 200,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: 140,
-            height: 140,
-            decoration: BoxDecoration(
-              color: AppColors.white.withValues(alpha: 0.92),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 16,
-                ),
-              ],
-            ),
-            child: const Icon(Icons.qr_code_2_rounded, size: 100, color: AppColors.navy),
-          ),
-          CustomPaint(
-            size: const Size(200, 200),
-            painter: _CornerFramePainter(color: AppColors.white, stroke: 4, length: 36),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Page 3 — mid copy + cream feature sheet (matches onboarding_3).
+/// Screen 3 — full-bleed harbor, overlay copy, cream icon card, Commencer.
 class _OnboardingPage3 extends StatelessWidget {
   const _OnboardingPage3({
     required this.bottom,
     required this.onStart,
     required this.onSkip,
+    required this.onDotTap,
   });
+
   final double bottom;
   final VoidCallback onStart;
   final VoidCallback onSkip;
+  final ValueChanged<int> onDotTap;
 
   @override
   Widget build(BuildContext context) {
@@ -321,15 +370,18 @@ class _OnboardingPage3 extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         Image.asset(AppAssets.bgCoast, fit: BoxFit.cover),
+        // Scrim so dark-teal headline stays legible over the photo
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.center,
               colors: [
-                Colors.white.withValues(alpha: 0.45),
+                Colors.white.withValues(alpha: 0.62),
+                Colors.white.withValues(alpha: 0.28),
                 Colors.transparent,
               ],
+              stops: const [0.0, 0.4, 0.75],
             ),
           ),
         ),
@@ -342,8 +394,14 @@ class _OnboardingPage3 extends StatelessWidget {
                 child: Row(
                   children: [
                     const SizedBox(width: 72),
-                    const Expanded(child: EcoLogo(height: 52)),
-                    _SkipButton(onSkip: onSkip),
+                    const Expanded(
+                      child: EcoLogo(
+                        compact: true,
+                        height: 44,
+                        showSubtitle: false,
+                      ),
+                    ),
+                    _SkipPill(onSkip: onSkip),
                   ],
                 ),
               ),
@@ -353,7 +411,7 @@ class _OnboardingPage3 extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      'Vivez l’histoire de Kerkennah',
+                      "Vivez l'histoire de Kerkennah",
                       textAlign: TextAlign.center,
                       style: AppFonts.playfair(
                         fontSize: 28,
@@ -367,8 +425,8 @@ class _OnboardingPage3 extends StatelessWidget {
                       'Des parcours thématiques pour une découverte immersive du patrimoine.',
                       textAlign: TextAlign.center,
                       style: AppFonts.dmSans(
-                        fontSize: 15,
-                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
                         height: 1.4,
                       ),
                     ),
@@ -378,26 +436,20 @@ class _OnboardingPage3 extends StatelessWidget {
               const Spacer(),
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.fromLTRB(20, 26, 20, 22 + bottom),
-                decoration: BoxDecoration(
+                padding: EdgeInsets.fromLTRB(20, 26, 20, 20 + bottom),
+                decoration: const BoxDecoration(
                   color: AppColors.cream,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      blurRadius: 20,
-                      offset: const Offset(0, -4),
-                    ),
-                  ],
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(36)),
                 ),
                 child: Column(
                   children: [
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: const [
+                      children: [
                         _FeatureIcon(
-                          asset: AppAssets.iconLandmarkGold,
+                          asset: AppAssets.iconPalm,
                           label: 'Patrimoine',
+                          tint: AppColors.gold,
                         ),
                         _FeatureIcon(
                           asset: AppAssets.iconVase,
@@ -410,9 +462,9 @@ class _OnboardingPage3 extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 22),
-                    const _Dots(index: 2, dark: true),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 20),
+                    _Dots(index: 2, onTap: onDotTap),
+                    const SizedBox(height: 14),
                     PrimaryButton(label: 'Commencer', onPressed: onStart),
                   ],
                 ),
@@ -431,6 +483,7 @@ class _FeatureIcon extends StatelessWidget {
     required this.label,
     this.tint,
   });
+
   final String asset;
   final String label;
   final Color? tint;
@@ -447,15 +500,13 @@ class _FeatureIcon extends StatelessWidget {
             border: Border.all(color: AppColors.gold, width: 1.6),
             color: AppColors.white,
           ),
-          child: Center(
-            child: PackIcon(asset, size: 30, color: tint),
-          ),
+          child: Center(child: PackIcon(asset, size: 30, color: tint)),
         ),
         const SizedBox(height: 8),
         Text(
           label,
           style: AppFonts.playfair(
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
             color: AppColors.navy,
           ),
@@ -463,41 +514,4 @@ class _FeatureIcon extends StatelessWidget {
       ],
     );
   }
-}
-
-class _CornerFramePainter extends CustomPainter {
-  _CornerFramePainter({
-    required this.color,
-    required this.stroke,
-    required this.length,
-  });
-
-  final Color color;
-  final double stroke;
-  final double length;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = stroke
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    void corner(double x, double y, double dx, double dy) {
-      canvas.drawLine(Offset(x, y), Offset(x + dx * length, y), paint);
-      canvas.drawLine(Offset(x, y), Offset(x, y + dy * length), paint);
-    }
-
-    corner(0, 0, 1, 1);
-    corner(size.width, 0, -1, 1);
-    corner(0, size.height, 1, -1);
-    corner(size.width, size.height, -1, -1);
-  }
-
-  @override
-  bool shouldRepaint(covariant _CornerFramePainter oldDelegate) =>
-      oldDelegate.color != color ||
-      oldDelegate.stroke != stroke ||
-      oldDelegate.length != length;
 }

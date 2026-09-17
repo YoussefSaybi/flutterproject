@@ -30,13 +30,14 @@ class _HomeScreenState extends State<HomeScreen> {
         slivers: [
           SliverToBoxAdapter(
             child: Container(
-              color: AppColors.navy,
-              padding: EdgeInsets.fromLTRB(16, top + 10, 16, 18),
+              color: AppColors.cream,
+              padding: EdgeInsets.fromLTRB(16, top + 10, 16, 14),
               child: Row(
                 children: [
                   const Expanded(child: EcoLogo(compact: true, height: 44)),
                   LanguageSwitcher(
                     selected: _lang,
+                    darkBackground: false,
                     onChanged: (v) => setState(() => _lang = v),
                   ),
                 ],
@@ -45,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(18, 20, 18, 0),
+              padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -108,21 +109,27 @@ class _HomeScreenState extends State<HomeScreen> {
                         fit: StackFit.expand,
                         children: [
                           Image.asset(AppAssets.bgMap, fit: BoxFit.cover),
-                          // Decorative map pins
                           const Positioned(
                             left: 48,
                             top: 52,
-                            child: _MapPin(Icons.account_balance_outlined),
+                            child: _MapPin(asset: AppAssets.iconLandmark),
                           ),
                           const Positioned(
                             right: 72,
                             top: 70,
-                            child: _MapPin(Icons.anchor_outlined),
+                            child: _MapPin(asset: AppAssets.iconAnchor),
                           ),
                           const Positioned(
                             left: 110,
                             bottom: 58,
-                            child: _MapPin(Icons.lightbulb_outline),
+                            child: _MapPin(asset: AppAssets.iconPinGold),
+                          ),
+                          const Positioned(
+                            right: 48,
+                            bottom: 72,
+                            child: _MapPin(
+                              fallbackIcon: Icons.lightbulb_outline,
+                            ),
                           ),
                           Positioned(
                             right: 12,
@@ -190,8 +197,9 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _MapPin extends StatelessWidget {
-  const _MapPin(this.icon);
-  final IconData icon;
+  const _MapPin({this.asset, this.fallbackIcon});
+  final String? asset;
+  final IconData? fallbackIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -206,7 +214,11 @@ class _MapPin extends StatelessWidget {
           BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 6),
         ],
       ),
-      child: Icon(icon, size: 16, color: AppColors.white),
+      child: Center(
+        child: asset != null
+            ? PackIcon(asset!, size: 18, color: AppColors.white)
+            : Icon(fallbackIcon ?? Icons.place, size: 16, color: AppColors.white),
+      ),
     );
   }
 }

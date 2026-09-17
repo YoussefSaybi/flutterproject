@@ -79,10 +79,11 @@ class ArLightScreen extends StatelessWidget {
                     style: AppFonts.dmSans(color: Colors.white70, height: 1.35, fontSize: 13),
                   ),
                   const SizedBox(height: 12),
-                  Wrap(
+                  // First two tags on one row, third alone (conceptual Wrap 2 then 1)
+                  const Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: const [
+                    children: [
                       _Tag(icon: Icons.anchor, label: 'Patrimoine maritime'),
                       _Tag(icon: Icons.handshake_outlined, label: 'Savoir-faire local'),
                       _Tag(icon: Icons.place_outlined, label: 'Île Chergui'),
@@ -129,7 +130,7 @@ class ArLightScreen extends StatelessWidget {
                   onTap: () => AppNav.goScanner(context),
                 ),
                 _BottomAction(
-                  icon: Icons.more_vert,
+                  icon: Icons.info_outline,
                   label: 'À propos',
                   onTap: () => AppNav.goProfile(context),
                 ),

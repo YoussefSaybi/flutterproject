@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/mock_data.dart';
 import '../navigation/app_nav.dart';
+import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../widgets/common_widgets.dart';
@@ -31,19 +32,18 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         children: [
           Container(
             width: double.infinity,
-            padding: EdgeInsets.fromLTRB(12, top + 8, 12, 18),
-            color: AppColors.navy,
+            padding: EdgeInsets.fromLTRB(12, top + 8, 12, 14),
+            color: AppColors.cream,
             child: Row(
               children: [
                 SoftCircleButton(
                   icon: Icons.arrow_back_ios_new_rounded,
-                  background: Colors.transparent,
-                  foreground: AppColors.white,
                   onPressed: () => AppNav.popOr(context, '/profile'),
                 ),
                 const Expanded(child: EcoLogo(compact: true, height: 40)),
                 LanguageSwitcher(
                   selected: _lang,
+                  darkBackground: false,
                   onChanged: (v) => setState(() => _lang = v),
                 ),
               ],
@@ -51,7 +51,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
+              padding: const EdgeInsets.fromLTRB(18, 10, 18, 28),
               children: [
                 Text(
                   'Mes favoris',
@@ -114,7 +114,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       onTap: () {
                         if (item.type == 'parcours') {
                           AppNav.openParcoursDetail(context);
-                        } else if (item.type == 'recit') {
+                        } else if (item.type == 'recits') {
                           AppNav.openAudio(context);
                         } else {
                           AppNav.openAr(context);
@@ -160,22 +160,32 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                                   ),
                                   Text(
                                     item.category,
-                                    style: AppFonts.dmSans(color: AppColors.teal, fontSize: 13),
+                                    style: AppFonts.dmSans(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 13,
+                                    ),
                                   ),
                                   Row(
                                     children: [
-                                      const Icon(Icons.place_outlined, size: 14, color: AppColors.teal),
+                                      const Icon(
+                                        Icons.place_outlined,
+                                        size: 14,
+                                        color: AppColors.textSecondary,
+                                      ),
                                       const SizedBox(width: 4),
                                       Text(
                                         item.location,
-                                        style: AppFonts.dmSans(color: AppColors.teal, fontSize: 12),
+                                        style: AppFonts.dmSans(
+                                          color: AppColors.textSecondary,
+                                          fontSize: 12,
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ],
                               ),
                             ),
-                            const Icon(Icons.favorite, color: AppColors.gold),
+                            const PackIcon(AppAssets.iconHeartActive, size: 22, color: AppColors.gold),
                             const Icon(Icons.chevron_right_rounded, color: AppColors.navy),
                           ],
                         ),

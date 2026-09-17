@@ -94,7 +94,8 @@ class ParcoursDetailScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                       ...List.generate(parcours.steps.length, (i) {
                         final step = parcours.steps[i];
-                        final locked = i >= parcours.steps.length - 1;
+                        // Last step "Retour au large" locked in UI only
+                        final locked = i == parcours.steps.length - 1;
                         return Opacity(
                           opacity: locked ? 0.45 : 1,
                           child: Padding(
@@ -111,8 +112,10 @@ class ParcoursDetailScreen extends StatelessWidget {
                                     width: 28,
                                     height: 28,
                                     alignment: Alignment.center,
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.gold,
+                                    decoration: BoxDecoration(
+                                      color: locked
+                                          ? AppColors.textSecondary
+                                          : AppColors.gold,
                                       shape: BoxShape.circle,
                                     ),
                                     child: Text(

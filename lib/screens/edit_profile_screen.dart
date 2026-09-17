@@ -77,42 +77,60 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final top = MediaQuery.paddingOf(context).top;
+    final bottom = MediaQuery.paddingOf(context).bottom;
+    final h = MediaQuery.sizeOf(context).height;
+
     return Scaffold(
       backgroundColor: AppColors.cream,
       resizeToAvoidBottomInset: true,
       body: Column(
         children: [
-          Container(
+          SizedBox(
+            height: h * 0.28,
             width: double.infinity,
-            padding: EdgeInsets.fromLTRB(12, top + 8, 12, 28),
-            color: AppColors.navy,
-            child: Row(
+            child: Stack(
+              fit: StackFit.expand,
               children: [
-                SoftCircleButton(
-                  icon: Icons.arrow_back_ios_new_rounded,
-                  background: Colors.transparent,
-                  foreground: AppColors.white,
-                  onPressed: () => AppNav.popOr(context, '/profile'),
-                ),
-                const Expanded(child: EcoLogo(compact: true, height: 40)),
-                LanguageSwitcher(
-                  selected: _lang,
-                  onChanged: (v) => setState(() => _lang = v),
+                Image.asset(AppAssets.bgCoast, fit: BoxFit.cover),
+                Container(color: Colors.black.withValues(alpha: 0.18)),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(12, top + 8, 12, 0),
+                  child: Row(
+                    children: [
+                      SoftCircleButton(
+                        icon: Icons.arrow_back_ios_new_rounded,
+                        onPressed: () => AppNav.popOr(context, '/profile'),
+                      ),
+                      const Expanded(child: EcoLogo(compact: true, height: 40)),
+                      LanguageSwitcher(
+                        selected: _lang,
+                        darkBackground: false,
+                        onChanged: (v) => setState(() => _lang = v),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
           Expanded(
             child: Transform.translate(
-              offset: const Offset(0, -16),
+              offset: const Offset(0, -28),
               child: Container(
                 width: double.infinity,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: AppColors.cream,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 16,
+                      offset: const Offset(0, -4),
+                    ),
+                  ],
                 ),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(22, 24, 22, 32),
+                  padding: EdgeInsets.fromLTRB(22, 26, 22, 24 + bottom),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -145,14 +163,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 color: AppColors.navy,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.photo_camera_outlined, color: Colors.white, size: 16),
+                              child: const Icon(
+                                Icons.photo_camera_outlined,
+                                color: Colors.white,
+                                size: 16,
+                              ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 22),
                         _LabeledField(
                           controller: _name,
-                          label: 'Nom complet',
+                          label: 'Nom',
                           icon: Icons.person_outline_rounded,
                           validator: (v) =>
                               (v == null || v.trim().length < 2) ? 'Nom invalide' : null,
@@ -181,8 +203,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                         const SizedBox(height: 24),
                         PrimaryButton(
-                          label: _saving ? 'Enregistrement...' : 'Enregistrer les modifications',
+                          label: _saving ? 'Enregistrement...' : 'Enregistrer',
                           onPressed: _saving ? () {} : _save,
+                          enabled: !_saving,
                         ),
                       ],
                     ),

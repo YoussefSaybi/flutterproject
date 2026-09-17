@@ -68,7 +68,7 @@ class MockData {
       steps: [
         ParcoursStep(
           title: 'Charfiya',
-          subtitle: 'Les anciens chantiers navals',
+          subtitle: 'Charfiya — Les anciens chantiers navals',
           imageAsset: AppAssets.bgBoat,
         ),
         ParcoursStep(

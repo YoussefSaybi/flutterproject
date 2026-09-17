@@ -84,10 +84,11 @@ class PrimaryButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.onPressed,
-    this.icon = Icons.arrow_forward_ios_rounded,
+    this.icon = Icons.arrow_forward_rounded,
     this.backgroundColor = AppColors.navy,
     this.foregroundColor = AppColors.white,
     this.expand = true,
+    this.enabled = true,
   });
 
   final String label;
@@ -96,27 +97,36 @@ class PrimaryButton extends StatelessWidget {
   final Color backgroundColor;
   final Color foregroundColor;
   final bool expand;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     final child = ElevatedButton(
-      onPressed: onPressed,
+      onPressed: enabled ? onPressed : null,
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor,
         foregroundColor: foregroundColor,
+        disabledBackgroundColor: backgroundColor.withValues(alpha: 0.4),
+        disabledForegroundColor: foregroundColor.withValues(alpha: 0.7),
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        shape: const StadiumBorder(),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
         children: [
-          Text(label, style: AppFonts.dmSans(fontWeight: FontWeight.w600, fontSize: 15, color: foregroundColor)),
-          if (icon != null) ...[
-            const SizedBox(width: 10),
-            Icon(icon, size: 16),
-          ],
+          if (expand) const Spacer(flex: 1),
+          Text(
+            label,
+            style: AppFonts.dmSans(
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
+              color: foregroundColor,
+            ),
+          ),
+          if (expand) const Spacer(flex: 1),
+          if (icon != null) Icon(icon, size: 18),
         ],
       ),
     );
@@ -131,21 +141,31 @@ class LanguageSwitcher extends StatelessWidget {
     this.selected = 'FR',
     this.onChanged,
     this.useComponent = true,
+    this.darkBackground = true,
   });
 
   final String selected;
   final ValueChanged<String>? onChanged;
   final bool useComponent;
+  final bool darkBackground;
 
   @override
   Widget build(BuildContext context) {
-    // Interactive language pills (component image is non-interactive decoration)
+    // Interactive language pills — darkBackground:false for cream/light headers.
     const langs = ['AR', 'FR', 'EN'];
+    final inactive = darkBackground
+        ? AppColors.white.withValues(alpha: 0.85)
+        : AppColors.navy;
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: AppColors.white.withValues(alpha: 0.15),
+        color: darkBackground
+            ? AppColors.white.withValues(alpha: 0.15)
+            : AppColors.white,
         borderRadius: BorderRadius.circular(20),
+        border: darkBackground
+            ? null
+            : Border.all(color: AppColors.navy.withValues(alpha: 0.18)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -162,7 +182,7 @@ class LanguageSwitcher extends StatelessWidget {
               child: Text(
                 lang,
                 style: AppFonts.dmSans(
-                  color: active ? AppColors.white : AppColors.white.withValues(alpha: 0.85),
+                  color: active ? AppColors.white : inactive,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                 ),

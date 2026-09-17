@@ -30,15 +30,11 @@ class ScannerScreen extends StatelessWidget {
                   children: [
                     SoftCircleButton(
                       icon: Icons.close,
-                      background: Colors.transparent,
-                      foreground: AppColors.white,
                       onPressed: () => AppNav.goHome(context),
                     ),
                     const Expanded(child: EcoLogo(compact: true, height: 40)),
                     SoftCircleButton(
                       icon: Icons.flash_on_rounded,
-                      background: Colors.transparent,
-                      foreground: AppColors.white,
                       onPressed: () {},
                     ),
                   ],
