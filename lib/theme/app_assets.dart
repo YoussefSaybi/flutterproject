@@ -1,0 +1,116 @@
+/// Paths for EcoAR_Regenerated_Asset_Pack (widgets use these — not full-screen UI JPGs).
+class AppAssets {
+  // Logos
+  static const logo = 'assets/logos/EcoAR_Kerkennah_Logo_4K.png';
+  static const logoAlt = 'assets/logos/logo.png';
+
+  // Compressed photo backgrounds (keeps APK installable on emulator)
+  static const bgCoast = 'assets/bg/coast.jpg';
+  static const bgVillage = 'assets/bg/village.jpg';
+  static const bgBoat = 'assets/bg/boat.jpg';
+  static const bgMap = 'assets/bg/map.jpg';
+  static const bgFisherman = 'assets/bg/fisherman.jpg';
+  static const bg06 = 'assets/bg/06_placeholder.jpg';
+  static const bg07 = 'assets/bg/07_placeholder.jpg';
+  static const bg08 = 'assets/bg/08_placeholder.jpg';
+  static const bg09 = 'assets/bg/09_placeholder.jpg';
+  static const bg10 = 'assets/bg/10_placeholder.jpg';
+  static const bg11 = 'assets/bg/11_placeholder.jpg';
+  static const bg12 = 'assets/bg/12_placeholder.jpg';
+
+  static const heroCoast = bgCoast;
+  static const heroVillage = bgVillage;
+  static const heroBoat = bgBoat;
+  static const heroMap = bgMap;
+  static const heroFisherman = bgFisherman;
+
+  // Component paths unused at runtime (widgets preferred); kept as aliases to icons
+  static const searchBar = iconSearch;
+  static const profileHeader = iconProfile;
+  static const parcoursCard = bgBoat;
+  static const audioPlayer = iconPlay;
+  static const mapControls = iconNav;
+  static const bottomNav = iconHome;
+  static const primaryButton = iconHome;
+  static const languageToggle = iconHome;
+  static const categoryPills = iconHome;
+  static const discoveryCard = bgVillage;
+  static const listItem = bgCoast;
+  static const scannerFrame = iconScanner;
+  static const socialGoogle = iconHome;
+  static const socialApple = iconHome;
+  static const passwordField = iconHome;
+  static const nameField = iconHome;
+
+  // Nav / UI icons
+  static const iconHome = 'assets/icons/01_icon.png';
+  static const iconHomeActive = 'assets/icons/02_icon.png';
+  static const iconMap = 'assets/icons/03_icon.png';
+  static const iconMapActive = 'assets/icons/04_icon.png';
+  static const iconParcours = 'assets/icons/05_icon.png';
+  static const iconParcoursActive = 'assets/icons/06_icon.png';
+  static const iconScanner = 'assets/icons/07_icon.png';
+  static const iconScannerActive = 'assets/icons/08_icon.png';
+  static const iconQr = 'assets/icons/09_icon.png';
+  static const iconProfile = 'assets/icons/10_icon.png';
+  static const iconProfileActive = 'assets/icons/11_icon.png';
+  static const iconBack = 'assets/icons/12_icon.png';
+  static const iconClose = 'assets/icons/13_icon.png';
+  static const iconMenu = 'assets/icons/14_icon.png';
+  static const iconMenuGold = 'assets/icons/15_icon.png';
+  static const iconBookmark = 'assets/icons/16_icon.png';
+  static const iconBookmarkActive = 'assets/icons/17_icon.png';
+  static const iconSearch = 'assets/icons/18_icon.png';
+  static const iconSearchActive = 'assets/icons/19_icon.png';
+  static const iconFilter = 'assets/icons/20_icon.png';
+  static const iconFilterGold = 'assets/icons/21_icon.png';
+  static const iconPin = 'assets/icons/22_icon.png';
+  static const iconPinGold = 'assets/icons/23_icon.png';
+  static const iconPlus = 'assets/icons/24_icon.png';
+  static const iconMinus = 'assets/icons/25_icon.png';
+  static const iconNav = 'assets/icons/26_icon.png';
+  static const iconPlay = 'assets/icons/27_icon.png';
+  static const iconPause = 'assets/icons/28_icon.png';
+  static const iconSkipBack = 'assets/icons/29_icon.png';
+  static const iconSkipForward = 'assets/icons/30_icon.png';
+  static const iconDownload = 'assets/icons/31_icon.png';
+  static const iconHelp = 'assets/icons/32_icon.png';
+  static const iconSettings = 'assets/icons/33_icon.png';
+  static const iconHeart = 'assets/icons/34_icon.png';
+  static const iconHeartActive = 'assets/icons/35_icon.png';
+  static const iconShare = 'assets/icons/36_icon.png';
+  static const iconAnchor = 'assets/icons/37_icon.png';
+  static const iconAnchorGold = 'assets/icons/38_icon.png';
+  static const iconBoat = 'assets/icons/39_icon.png';
+  static const iconBoatGold = 'assets/icons/40_icon.png';
+  static const iconLandmark = 'assets/icons/41_icon.png';
+  static const iconLandmarkGold = 'assets/icons/42_icon.png';
+  static const iconPalm = 'assets/icons/43_icon.png';
+  static const iconVase = 'assets/icons/44_icon.png';
+  static const iconDoc = 'assets/icons/45_icon.png';
+  static const iconCamera = 'assets/icons/46_icon.png';
+
+  // Reference mockups only (do not use as screen UI)
+  static const screenSplash = 'assets/screens/01_Splash.png';
+  static const screenOnboarding1 = 'assets/screens/02_Onboarding_1.png';
+  static const screenOnboarding2 = 'assets/screens/03_Onboarding_2.png';
+  static const screenOnboarding3 = 'assets/screens/04_Onboarding_3.png';
+  static const screenLogin = 'assets/screens/05_Login.png';
+  static const screenSignUp = 'assets/screens/06_Sign_Up.png';
+  static const screenHome = 'assets/screens/07_Home.png';
+  static const screenParcours = 'assets/screens/08_Parcours_Detail.png';
+  static const screenScanner = 'assets/screens/09_Scanner_QR.png';
+  static const screenAudio = 'assets/screens/10_Audio_Story.png';
+  static const screenAr = 'assets/screens/11_AR_Light.png';
+  static const screenProfile = 'assets/screens/12_Profile.png';
+  static const screenEditProfile = 'assets/screens/13_Edit_Profile.png';
+  static const screenFavorites = 'assets/screens/14_Favorites.png';
+
+  static String icon(int n) =>
+      'assets/icons/${n.toString().padLeft(2, '0')}_icon.png';
+
+  static String component(int n) => icon(n);
+
+  static String placeholder(int n) =>
+      'assets/bg/${n.toString().padLeft(2, '0')}_placeholder.jpg';
+}
