@@ -8,14 +8,14 @@ import '../screens/credits_screen.dart';
 import '../screens/edit_profile_screen.dart';
 import '../screens/favorites_screen.dart';
 import '../screens/home_screen.dart';
-import '../screens/login_screen.dart';
+import '../screens/eco_ar_login_screen.dart';
 import '../screens/map_screen.dart';
 import '../screens/onboarding_screen.dart';
 import '../screens/parcours_detail_screen.dart';
 import '../screens/parcours_list_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/scanner_screen.dart';
-import '../screens/signup_screen.dart';
+import '../screens/eco_ar_signup_screen.dart';
 import '../screens/splash_screen.dart';
 import '../widgets/main_shell.dart';
 
@@ -66,10 +66,10 @@ GoRouter createRouter() {
         path: '/login',
         pageBuilder: (_, state) => _fadePage(
           key: state.pageKey,
-          child: const LoginScreen(),
+          child: const EcoArLoginScreen(),
         ),
       ),
-      GoRoute(path: '/signup', builder: (_, __) => const SignUpScreen()),
+      GoRoute(path: '/signup', builder: (_, __) => const EcoArSignUpScreen()),
       StatefulShellRoute.indexedStack(
         pageBuilder: (context, state, navigationShell) {
           return _fadePage(

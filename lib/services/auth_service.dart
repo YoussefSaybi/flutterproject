@@ -133,8 +133,8 @@ class AuthService extends ChangeNotifier {
     if (!isValidEmail(e)) {
       return AuthResult.fail('Adresse email invalide.');
     }
-    if (password.length < 6) {
-      return AuthResult.fail('Le mot de passe doit contenir au moins 6 caractères.');
+    if (password.length < 8) {
+      return AuthResult.fail('Le mot de passe doit contenir au moins 8 caractères.');
     }
     if (password != confirmPassword) {
       return AuthResult.fail('Les mots de passe ne correspondent pas.');
