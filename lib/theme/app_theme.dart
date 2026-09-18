@@ -75,15 +75,15 @@ class AppTheme {
         fillColor: AppColors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(AppLayout.radiusPill),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(AppLayout.radiusPill),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(AppLayout.radiusPill),
           borderSide: const BorderSide(color: AppColors.navy, width: 1.4),
         ),
         hintStyle: AppFonts.dmSans(color: AppColors.textSecondary),

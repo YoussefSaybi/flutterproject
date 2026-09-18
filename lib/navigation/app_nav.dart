@@ -21,6 +21,9 @@ class AppNav {
   static void openEditProfile(BuildContext context) =>
       context.push('/edit-profile');
 
+  static void openCredits(BuildContext context) =>
+      context.push('/credits?from=menu');
+
   static void popOr(BuildContext context, String fallback) {
     if (context.canPop()) {
       context.pop();

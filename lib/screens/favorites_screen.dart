@@ -16,11 +16,9 @@ class FavoritesScreen extends StatefulWidget {
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
   String _filter = 'tous';
-  String _lang = 'FR';
 
   @override
   Widget build(BuildContext context) {
-    final top = MediaQuery.paddingOf(context).top;
     final items = MockData.favorites.where((f) {
       if (_filter == 'tous') return true;
       return f.type == _filter;
@@ -30,28 +28,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       backgroundColor: AppColors.cream,
       body: Column(
         children: [
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.fromLTRB(12, top + 8, 12, 14),
-            color: AppColors.cream,
-            child: Row(
-              children: [
-                SoftCircleButton(
-                  icon: Icons.arrow_back_ios_new_rounded,
-                  onPressed: () => AppNav.popOr(context, '/profile'),
-                ),
-                const Expanded(child: EcoLogo(compact: true, height: 40)),
-                LanguageSwitcher(
-                  selected: _lang,
-                  darkBackground: false,
-                  onChanged: (v) => setState(() => _lang = v),
-                ),
-              ],
-            ),
+          TealHeader(
+            showBack: true,
+            showLanguage: true,
+            onBack: () => AppNav.popOr(context, '/profile'),
           ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(18, 10, 18, 28),
+              padding: const EdgeInsets.fromLTRB(18, 20, 18, 28),
               children: [
                 Text(
                   'Mes favoris',
@@ -64,33 +48,33 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 const SizedBox(height: 6),
                 Text(
                   'Vos lieux, parcours et histoires préférés à retrouver à tout moment.',
-                  style: AppFonts.dmSans(color: AppColors.textSecondary, height: 1.4),
+                  style: AppFonts.dmSans(
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      _Chip(
+                      _FilterPill(
                         label: 'Tous',
                         selected: _filter == 'tous',
                         onTap: () => setState(() => _filter = 'tous'),
                       ),
-                      _Chip(
+                      _FilterPill(
                         label: 'Lieux',
-                        icon: Icons.place_outlined,
                         selected: _filter == 'lieux',
                         onTap: () => setState(() => _filter = 'lieux'),
                       ),
-                      _Chip(
+                      _FilterPill(
                         label: 'Parcours',
-                        icon: Icons.route_outlined,
                         selected: _filter == 'parcours',
                         onTap: () => setState(() => _filter = 'parcours'),
                       ),
-                      _Chip(
+                      _FilterPill(
                         label: 'Récits',
-                        icon: Icons.menu_book_outlined,
                         selected: _filter == 'recits',
                         onTap: () => setState(() => _filter = 'recits'),
                       ),
@@ -120,19 +104,15 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           AppNav.openAr(context);
                         }
                       },
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius:
+                          BorderRadius.circular(AppLayout.radiusMedium),
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(18),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                          borderRadius:
+                              BorderRadius.circular(AppLayout.radiusMedium),
+                          boxShadow: AppLayout.softShadow,
                         ),
                         child: Row(
                           children: [
@@ -158,6 +138,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                                       color: AppColors.navy,
                                     ),
                                   ),
+                                  const SizedBox(height: 2),
                                   Text(
                                     item.category,
                                     style: AppFonts.dmSans(
@@ -165,6 +146,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                                       fontSize: 13,
                                     ),
                                   ),
+                                  const SizedBox(height: 4),
                                   Row(
                                     children: [
                                       const Icon(
@@ -173,11 +155,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                                         color: AppColors.textSecondary,
                                       ),
                                       const SizedBox(width: 4),
-                                      Text(
-                                        item.location,
-                                        style: AppFonts.dmSans(
-                                          color: AppColors.textSecondary,
-                                          fontSize: 12,
+                                      Flexible(
+                                        child: Text(
+                                          item.location,
+                                          style: AppFonts.dmSans(
+                                            color: AppColors.textSecondary,
+                                            fontSize: 12,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -185,8 +169,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                                 ],
                               ),
                             ),
-                            const PackIcon(AppAssets.iconHeartActive, size: 22, color: AppColors.gold),
-                            const Icon(Icons.chevron_right_rounded, color: AppColors.navy),
+                            const PackIcon(
+                              AppAssets.iconHeartActive,
+                              size: 22,
+                              color: AppColors.gold,
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              color: AppColors.navy,
+                            ),
                           ],
                         ),
                       ),
@@ -202,18 +194,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 }
 
-class _Chip extends StatelessWidget {
-  const _Chip({
+class _FilterPill extends StatelessWidget {
+  const _FilterPill({
     required this.label,
     required this.selected,
     required this.onTap,
-    this.icon,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -221,28 +211,25 @@ class _Chip extends StatelessWidget {
       padding: const EdgeInsets.only(right: 8),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(AppLayout.radiusPill),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
             color: selected ? AppColors.navy : AppColors.white,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: AppColors.navy.withValues(alpha: 0.35)),
+            borderRadius: BorderRadius.circular(AppLayout.radiusPill),
+            border: Border.all(
+              color: selected
+                  ? AppColors.navy
+                  : AppColors.navy.withValues(alpha: 0.28),
+            ),
           ),
-          child: Row(
-            children: [
-              if (icon != null) ...[
-                Icon(icon, size: 16, color: selected ? AppColors.white : AppColors.navy),
-                const SizedBox(width: 6),
-              ],
-              Text(
-                label,
-                style: AppFonts.dmSans(
-                  color: selected ? AppColors.white : AppColors.navy,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          child: Text(
+            label,
+            style: AppFonts.dmSans(
+              color: selected ? AppColors.white : AppColors.navy,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
           ),
         ),
       ),

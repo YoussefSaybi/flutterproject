@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../screens/ar_light_screen.dart';
 import '../screens/audio_story_screen.dart';
 import '../screens/chatbot_screen.dart';
+import '../screens/credits_screen.dart';
 import '../screens/edit_profile_screen.dart';
 import '../screens/favorites_screen.dart';
 import '../screens/home_screen.dart';
@@ -20,18 +21,61 @@ import '../widgets/main_shell.dart';
 
 final GlobalKey<NavigatorState> _rootKey = GlobalKey<NavigatorState>();
 
+CustomTransitionPage<void> _fadePage({
+  required LocalKey key,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: key,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 280),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+        child: child,
+      );
+    },
+  );
+}
+
 GoRouter createRouter() {
   return GoRouter(
     navigatorKey: _rootKey,
     initialLocation: '/',
     routes: [
       GoRoute(path: '/', builder: (_, __) => const SplashScreen()),
-      GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
-      GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+      GoRoute(
+        path: '/credits',
+        pageBuilder: (context, state) {
+          final fromMenu = state.uri.queryParameters['from'] == 'menu';
+          return _fadePage(
+            key: state.pageKey,
+            child: CreditsScreen(fromMenu: fromMenu),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/onboarding',
+        pageBuilder: (_, state) => _fadePage(
+          key: state.pageKey,
+          child: const OnboardingScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/login',
+        pageBuilder: (_, state) => _fadePage(
+          key: state.pageKey,
+          child: const LoginScreen(),
+        ),
+      ),
       GoRoute(path: '/signup', builder: (_, __) => const SignUpScreen()),
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) {
-          return MainShell(navigationShell: navigationShell);
+        pageBuilder: (context, state, navigationShell) {
+          return _fadePage(
+            key: state.pageKey,
+            child: MainShell(navigationShell: navigationShell),
+          );
         },
         branches: [
           StatefulShellBranch(

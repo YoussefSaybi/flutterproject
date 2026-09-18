@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/locale_controller.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
@@ -53,6 +54,27 @@ class EcoLogo extends StatelessWidget {
   }
 }
 
+/// Méliès production logo — shared PNG asset (not styled text).
+class MeliesLogo extends StatelessWidget {
+  const MeliesLogo({super.key, this.height = 36, this.color = AppColors.gold});
+
+  final double height;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.asset(
+      AppAssets.logoMelies,
+      height: height,
+      fit: BoxFit.contain,
+      errorBuilder: (_, __, ___) => Text(
+        'Méliès',
+        style: AppFonts.greatVibes(color: color, fontSize: height * 0.85),
+      ),
+    );
+  }
+}
+
 class PackIcon extends StatelessWidget {
   const PackIcon(
     this.asset, {
@@ -74,11 +96,13 @@ class PackIcon extends StatelessWidget {
       fit: BoxFit.contain,
       color: color,
       colorBlendMode: color != null ? BlendMode.srcIn : null,
-      errorBuilder: (_, __, ___) => Icon(Icons.image_not_supported_outlined, size: size),
+      errorBuilder: (_, __, ___) =>
+          Icon(Icons.image_not_supported_outlined, size: size),
     );
   }
 }
 
+/// Primary pill CTA — label + chevron in circle (CEO spec).
 class PrimaryButton extends StatelessWidget {
   const PrimaryButton({
     super.key,
@@ -89,6 +113,7 @@ class PrimaryButton extends StatelessWidget {
     this.foregroundColor = AppColors.white,
     this.expand = true,
     this.enabled = true,
+    this.showTrailing = true,
   });
 
   final String label;
@@ -98,36 +123,56 @@ class PrimaryButton extends StatelessWidget {
   final Color foregroundColor;
   final bool expand;
   final bool enabled;
+  final bool showTrailing;
 
   @override
   Widget build(BuildContext context) {
-    final child = ElevatedButton(
-      onPressed: enabled ? onPressed : null,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor,
-        foregroundColor: foregroundColor,
-        disabledBackgroundColor: backgroundColor.withValues(alpha: 0.4),
-        disabledForegroundColor: foregroundColor.withValues(alpha: 0.7),
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
-        shape: const StadiumBorder(),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
-        children: [
-          if (expand) const Spacer(flex: 1),
-          Text(
-            label,
-            style: AppFonts.dmSans(
-              fontWeight: FontWeight.w600,
-              fontSize: 15,
-              color: foregroundColor,
+    // Keep multi-word labels on one line (e.g. "Se connecter").
+    final singleLineLabel = label.replaceAll(' ', '\u00A0');
+    final trailing = showTrailing && icon != null
+        ? Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: foregroundColor.withValues(alpha: 0.18),
+              shape: BoxShape.circle,
             ),
+            child: Icon(icon, size: 16, color: foregroundColor),
+          )
+        : const SizedBox(width: 32, height: 32);
+
+    final child = Material(
+      color: enabled
+          ? backgroundColor
+          : backgroundColor.withValues(alpha: 0.4),
+      borderRadius: BorderRadius.circular(AppLayout.radiusPill),
+      child: InkWell(
+        onTap: enabled ? onPressed : null,
+        borderRadius: BorderRadius.circular(AppLayout.radiusPill),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 14, 10, 14),
+          child: Row(
+            children: [
+              const SizedBox(width: 32),
+              Expanded(
+                child: Text(
+                  singleLineLabel,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppFonts.dmSans(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    color: foregroundColor,
+                    height: 1.2,
+                  ),
+                ),
+              ),
+              trailing,
+            ],
           ),
-          if (expand) const Spacer(flex: 1),
-          if (icon != null) Icon(icon, size: 18),
-        ],
+        ),
       ),
     );
 
@@ -135,62 +180,206 @@ class PrimaryButton extends StatelessWidget {
   }
 }
 
+/// Secondary outlined pill (Google / Apple style).
+class SecondaryButton extends StatelessWidget {
+  const SecondaryButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.leading,
+  });
+
+  final String label;
+  final VoidCallback onPressed;
+  final Widget? leading;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.navy,
+          side: const BorderSide(color: AppColors.border),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          shape: const StadiumBorder(),
+          backgroundColor: AppColors.white,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (leading != null) ...[
+              leading!,
+              const SizedBox(width: 12),
+            ],
+            Text(
+              label,
+              style: AppFonts.dmSans(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+                color: AppColors.navy,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Pattern A sheet — top-rounded cream/white card with soft overlap shadow.
+class SheetCard extends StatelessWidget {
+  const SheetCard({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.fromLTRB(24, 28, 24, 24),
+    this.color = AppColors.cream,
+  });
+
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppLayout.radiusSheet),
+        ),
+        boxShadow: AppLayout.sheetShadow,
+      ),
+      padding: padding,
+      child: child,
+    );
+  }
+}
+
+/// Teal app header for Pattern B (logo + language or back/settings).
+class TealHeader extends StatelessWidget {
+  const TealHeader({
+    super.key,
+    this.showBack = false,
+    this.onBack,
+    this.trailing,
+    this.showLanguage = true,
+    this.logoHeight = 40,
+  });
+
+  final bool showBack;
+  final VoidCallback? onBack;
+  final Widget? trailing;
+  final bool showLanguage;
+  final double logoHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: AppColors.navy,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 8, 12, 14),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 44,
+                child: showBack
+                    ? SoftCircleButton(
+                        onPressed: onBack ?? () => Navigator.of(context).maybePop(),
+                        icon: Icons.chevron_left_rounded,
+                        background: AppColors.white.withValues(alpha: 0.15),
+                        foreground: AppColors.white,
+                        size: 40,
+                      )
+                    : null,
+              ),
+              Expanded(
+                child: Center(child: EcoLogo(compact: true, height: logoHeight)),
+              ),
+              if (trailing != null)
+                trailing!
+              else if (showLanguage)
+                const LanguageSwitcher(darkBackground: true)
+              else
+                const SizedBox(width: 44),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class LanguageSwitcher extends StatelessWidget {
   const LanguageSwitcher({
     super.key,
-    this.selected = 'FR',
+    this.selected,
     this.onChanged,
     this.useComponent = true,
     this.darkBackground = true,
   });
 
-  final String selected;
+  final String? selected;
   final ValueChanged<String>? onChanged;
   final bool useComponent;
   final bool darkBackground;
 
   @override
   Widget build(BuildContext context) {
-    // Interactive language pills — darkBackground:false for cream/light headers.
-    const langs = ['AR', 'FR', 'EN'];
-    final inactive = darkBackground
-        ? AppColors.white.withValues(alpha: 0.85)
-        : AppColors.navy;
-    return Container(
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: darkBackground
-            ? AppColors.white.withValues(alpha: 0.15)
-            : AppColors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: darkBackground
-            ? null
-            : Border.all(color: AppColors.navy.withValues(alpha: 0.18)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: langs.map((lang) {
-          final active = lang == selected;
-          return GestureDetector(
-            onTap: () => onChanged?.call(lang),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: active ? AppColors.gold : Colors.transparent,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                lang,
-                style: AppFonts.dmSans(
-                  color: active ? AppColors.white : inactive,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
+    return ListenableBuilder(
+      listenable: LocaleController.instance,
+      builder: (context, _) {
+        const langs = ['AR', 'FR', 'EN'];
+        final current = selected ?? LocaleController.instance.code;
+        final inactive = darkBackground
+            ? AppColors.white.withValues(alpha: 0.85)
+            : AppColors.navy;
+        return Container(
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            color: darkBackground
+                ? AppColors.white.withValues(alpha: 0.15)
+                : AppColors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: darkBackground
+                ? null
+                : Border.all(color: AppColors.navy.withValues(alpha: 0.18)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: langs.map((lang) {
+              final active = lang == current;
+              return GestureDetector(
+                onTap: () {
+                  LocaleController.instance.setCode(lang);
+                  onChanged?.call(lang);
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: active ? AppColors.gold : Colors.transparent,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    lang,
+                    style: AppFonts.dmSans(
+                      color: active ? AppColors.navy : inactive,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
+              );
+            }).toList(),
+          ),
+        );
+      },
     );
   }
 }
@@ -209,17 +398,6 @@ class AppSearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (usePackImage) {
-      return GestureDetector(
-        onTap: onTap,
-        child: Image.asset(
-          AppAssets.searchBar,
-          fit: BoxFit.fitWidth,
-          width: double.infinity,
-          errorBuilder: (_, __, ___) => _fallbackField(),
-        ),
-      );
-    }
     return _fallbackField();
   }
 
@@ -230,22 +408,25 @@ class AppSearchField extends StatelessWidget {
       style: AppFonts.dmSans(color: AppColors.navy),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: AppFonts.dmSans(color: AppColors.textSecondary.withValues(alpha: 0.75)),
+        hintStyle: AppFonts.dmSans(
+          color: AppColors.textSecondary.withValues(alpha: 0.75),
+        ),
         prefixIcon: const PackIcon(AppAssets.iconSearch, size: 22),
         suffixIcon: const PackIcon(AppAssets.iconFilter, size: 22),
         filled: true,
         fillColor: AppColors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppLayout.radiusPill),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppLayout.radiusPill),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppLayout.radiusPill),
           borderSide: const BorderSide(color: AppColors.navy, width: 1.2),
         ),
       ),
@@ -285,7 +466,11 @@ class SoftCircleButton extends StatelessWidget {
           child: Center(
             child: asset != null
                 ? PackIcon(asset!, size: size * 0.55)
-                : Icon(icon ?? Icons.circle, color: foreground, size: size * 0.45),
+                : Icon(
+                    icon ?? Icons.circle,
+                    color: foreground,
+                    size: size * 0.45,
+                  ),
           ),
         ),
       ),
@@ -347,5 +532,41 @@ class PackImage extends StatelessWidget {
       return ClipRRect(borderRadius: borderRadius!, child: img);
     }
     return img;
+  }
+}
+
+class PageDots extends StatelessWidget {
+  const PageDots({
+    super.key,
+    required this.count,
+    required this.index,
+    this.onTap,
+  });
+
+  final int count;
+  final int index;
+  final ValueChanged<int>? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(count, (i) {
+        final active = i == index;
+        return GestureDetector(
+          onTap: onTap != null ? () => onTap!(i) : null,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            margin: const EdgeInsets.symmetric(horizontal: 5),
+            width: active ? 9 : 8,
+            height: active ? 9 : 8,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: active ? AppColors.gold : const Color(0xFFD0D5D8),
+            ),
+          ),
+        );
+      }),
+    );
   }
 }

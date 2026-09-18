@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import 'app_session.dart';
+
 class AppUser {
   const AppUser({
     required this.name,
@@ -107,6 +109,8 @@ class AuthService extends ChangeNotifier {
 
     _current = user;
     notifyListeners();
+    // ignore: unawaited_futures
+    AppSession.instance.persistSession(user.email);
     return AuthResult.ok('Connexion réussie.');
   }
 
@@ -146,22 +150,47 @@ class AuthService extends ChangeNotifier {
     _users[_normalize(e)] = user;
     _current = user;
     notifyListeners();
+    // ignore: unawaited_futures
+    AppSession.instance.persistSession(user.email);
     return AuthResult.ok('Compte créé avec succès.');
   }
 
   AuthResult continueAsGuest({required String provider}) {
+    final email =
+        provider == 'apple' ? 'apple@ecoar.tn' : 'google@ecoar.tn';
     _current = AppUser(
       name: provider == 'apple' ? 'Utilisateur Apple' : 'Utilisateur Google',
-      email: provider == 'apple' ? 'apple@ecoar.tn' : 'google@ecoar.tn',
+      email: email,
       password: '',
     );
     notifyListeners();
+    // ignore: unawaited_futures
+    AppSession.instance.persistSession(email);
     return AuthResult.ok('Connecté avec $provider.');
+  }
+
+  /// Restore in-memory session after prefs load (splash bootstrap).
+  void restoreSession(String email) {
+    final key = _normalize(email);
+    final user = _users[key];
+    if (user != null) {
+      _current = user;
+    } else {
+      _current = AppUser(
+        name: email.split('@').first,
+        email: email,
+        password: '',
+      );
+      _users[key] = _current!;
+    }
+    notifyListeners();
   }
 
   void logout() {
     _current = null;
     notifyListeners();
+    // ignore: unawaited_futures
+    AppSession.instance.clearSession();
   }
 
   void updateProfile({
@@ -182,6 +211,8 @@ class AuthService extends ChangeNotifier {
     _users[_normalize(updated.email)] = updated;
     _current = updated;
     notifyListeners();
+    // ignore: unawaited_futures
+    AppSession.instance.persistSession(updated.email);
   }
 }
 

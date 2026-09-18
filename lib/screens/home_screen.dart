@@ -15,179 +15,166 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String _lang = 'FR';
   int _cardPage = 0;
 
   @override
   Widget build(BuildContext context) {
     final parcours = MockData.parcours;
     final featured = parcours[_cardPage.clamp(0, parcours.length - 1)];
-    final top = MediaQuery.paddingOf(context).top;
 
     return Scaffold(
       backgroundColor: AppColors.cream,
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Container(
-              color: AppColors.cream,
-              padding: EdgeInsets.fromLTRB(16, top + 10, 16, 14),
-              child: Row(
-                children: [
-                  const Expanded(child: EcoLogo(compact: true, height: 44)),
-                  LanguageSwitcher(
-                    selected: _lang,
-                    darkBackground: false,
-                    onChanged: (v) => setState(() => _lang = v),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Bienvenue à Kerkennah',
-                              style: AppFonts.playfair(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.navy,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Explorez le patrimoine culturel des îles autrement',
-                              style: AppFonts.dmSans(
-                                color: AppColors.textSecondary,
-                                height: 1.4,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4, left: 8),
-                        child: Text(
-                          'Méliès',
-                          style: AppFonts.greatVibes(color: AppColors.gold, fontSize: 30),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.06),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: AppSearchField(onTap: () => AppNav.goMap(context)),
-                  ),
-                  const SizedBox(height: 18),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(22),
-                    child: AspectRatio(
-                      aspectRatio: 16 / 11,
-                      child: Stack(
-                        fit: StackFit.expand,
+      body: Column(
+        children: [
+          const TealHeader(showBack: false, showLanguage: true),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(18, 20, 18, 28),
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Image.asset(AppAssets.bgMap, fit: BoxFit.cover),
-                          const Positioned(
-                            left: 48,
-                            top: 52,
-                            child: _MapPin(asset: AppAssets.iconLandmark),
-                          ),
-                          const Positioned(
-                            right: 72,
-                            top: 70,
-                            child: _MapPin(asset: AppAssets.iconAnchor),
-                          ),
-                          const Positioned(
-                            left: 110,
-                            bottom: 58,
-                            child: _MapPin(asset: AppAssets.iconPinGold),
-                          ),
-                          const Positioned(
-                            right: 48,
-                            bottom: 72,
-                            child: _MapPin(
-                              fallbackIcon: Icons.lightbulb_outline,
+                          Text(
+                            'Bienvenue à Kerkennah',
+                            style: AppFonts.playfair(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.navy,
                             ),
                           ),
-                          Positioned(
-                            right: 12,
-                            top: 12,
-                            child: Column(
-                              children: [
-                                SoftCircleButton(
-                                  asset: AppAssets.iconNav,
-                                  onPressed: () => AppNav.goMap(context),
-                                ),
-                                const SizedBox(height: 8),
-                                SoftCircleButton(icon: Icons.add, onPressed: () {}),
-                                const SizedBox(height: 8),
-                                SoftCircleButton(icon: Icons.remove, onPressed: () {}),
-                              ],
-                            ),
-                          ),
-                          Positioned(
-                            left: 16,
-                            bottom: 16,
-                            child: SoftCircleButton(
-                              icon: Icons.my_location,
-                              background: AppColors.navy,
-                              foreground: AppColors.white,
-                              onPressed: () => AppNav.goMap(context),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Explorez le patrimoine culturel des îles autrement',
+                            style: AppFonts.dmSans(
+                              color: AppColors.textSecondary,
+                              height: 1.4,
+                              fontSize: 14,
                             ),
                           ),
                         ],
                       ),
                     ),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4, left: 8),
+                      child: MeliesLogo(height: 32),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: AppLayout.softShadow,
                   ),
-                  const SizedBox(height: 18),
-                  _RecommendedCard(
-                    parcours: featured,
-                    onDiscover: () => AppNav.openParcoursDetail(context),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(4, (i) {
-                      final active = i == _cardPage;
-                      return GestureDetector(
-                        onTap: () => setState(() => _cardPage = i.clamp(0, parcours.length - 1)),
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: active ? AppColors.gold : AppColors.border,
+                  child: AppSearchField(onTap: () => AppNav.goMap(context)),
+                ),
+                const SizedBox(height: 18),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppLayout.radiusCard),
+                  child: AspectRatio(
+                    aspectRatio: 16 / 11,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.asset(AppAssets.bgMap, fit: BoxFit.cover),
+                        const Positioned(
+                          left: 48,
+                          top: 52,
+                          child: _MapPin(asset: AppAssets.iconLandmark),
+                        ),
+                        const Positioned(
+                          right: 72,
+                          top: 70,
+                          child: _MapPin(asset: AppAssets.iconAnchor),
+                        ),
+                        const Positioned(
+                          left: 110,
+                          bottom: 58,
+                          child: _MapPin(asset: AppAssets.iconPinGold),
+                        ),
+                        const Positioned(
+                          right: 48,
+                          bottom: 72,
+                          child: _MapPin(fallbackIcon: Icons.lightbulb_outline),
+                        ),
+                        Positioned(
+                          left: 20,
+                          top: 24,
+                          child: Text(
+                            'Île Chergui',
+                            style: AppFonts.dmSans(
+                              color: AppColors.navy,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11,
+                            ),
                           ),
                         ),
-                      );
-                    }),
+                        Positioned(
+                          right: 28,
+                          bottom: 36,
+                          child: Text(
+                            'Île Gharbi',
+                            style: AppFonts.dmSans(
+                              color: AppColors.navy,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: 12,
+                          top: 12,
+                          child: Column(
+                            children: [
+                              SoftCircleButton(
+                                asset: AppAssets.iconNav,
+                                onPressed: () => AppNav.goMap(context),
+                              ),
+                              const SizedBox(height: 8),
+                              SoftCircleButton(
+                                icon: Icons.add,
+                                onPressed: () {},
+                              ),
+                              const SizedBox(height: 8),
+                              SoftCircleButton(
+                                icon: Icons.remove,
+                                onPressed: () {},
+                              ),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          left: 16,
+                          bottom: 16,
+                          child: SoftCircleButton(
+                            icon: Icons.my_location,
+                            background: AppColors.navy,
+                            foreground: AppColors.white,
+                            onPressed: () => AppNav.goMap(context),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 28),
-                ],
-              ),
+                ),
+                const SizedBox(height: 18),
+                _RecommendedCard(
+                  parcours: featured,
+                  onDiscover: () => AppNav.openParcoursDetail(context),
+                ),
+                const SizedBox(height: 14),
+                PageDots(
+                  count: parcours.length.clamp(1, 4),
+                  index: _cardPage.clamp(0, parcours.length - 1),
+                  onTap: (i) => setState(
+                    () => _cardPage = i.clamp(0, parcours.length - 1),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -217,7 +204,11 @@ class _MapPin extends StatelessWidget {
       child: Center(
         child: asset != null
             ? PackIcon(asset!, size: 18, color: AppColors.white)
-            : Icon(fallbackIcon ?? Icons.place, size: 16, color: AppColors.white),
+            : Icon(
+                fallbackIcon ?? Icons.place,
+                size: 16,
+                color: AppColors.white,
+              ),
       ),
     );
   }
@@ -234,85 +225,58 @@ class _RecommendedCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
+        borderRadius: BorderRadius.circular(AppLayout.radiusCard),
+        boxShadow: AppLayout.softShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Image.asset(parcours.imageAsset, fit: BoxFit.cover),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Parcours recommandé',
+            style: AppFonts.dmSans(
+              color: AppColors.gold,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            parcours.title,
+            style: AppFonts.playfair(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppColors.navy,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '${parcours.places} lieux · ${parcours.duration}',
+            style: AppFonts.dmSans(fontSize: 13, color: AppColors.navy),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            parcours.subtitle,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: AppFonts.dmSans(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 14),
+          PrimaryButton(
+            label: 'Découvrir le parcours',
+            onPressed: onDiscover,
           ),
         ],
-      ),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child: Image.asset(
-                parcours.imageAsset,
-                width: 96,
-                fit: BoxFit.cover,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Parcours recommandé',
-                    style: AppFonts.dmSans(
-                      color: AppColors.gold,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    parcours.title,
-                    style: AppFonts.playfair(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.navy,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      const Icon(Icons.place_outlined, size: 14, color: AppColors.navy),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${parcours.places} lieux',
-                        style: AppFonts.dmSans(fontSize: 12, color: AppColors.navy),
-                      ),
-                      const SizedBox(width: 10),
-                      const Icon(Icons.schedule, size: 14, color: AppColors.navy),
-                      const SizedBox(width: 4),
-                      Text(
-                        parcours.duration,
-                        style: AppFonts.dmSans(fontSize: 12, color: AppColors.navy),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    parcours.subtitle,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppFonts.dmSans(fontSize: 12, color: AppColors.textSecondary),
-                  ),
-                  const SizedBox(height: 10),
-                  PrimaryButton(
-                    label: 'Découvrir le parcours',
-                    expand: true,
-                    onPressed: onDiscover,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

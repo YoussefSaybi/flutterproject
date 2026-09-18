@@ -243,7 +243,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       TextSpan(
                                         text: "Conditions d'utilisation",
                                         style: AppFonts.dmSans(
-                                          color: AppColors.gold,
+                                          color: AppColors.navy,
                                           fontWeight: FontWeight.w600,
                                           decoration: TextDecoration.underline,
                                           fontSize: 13,
@@ -254,7 +254,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       TextSpan(
                                         text: 'Politique de confidentialité',
                                         style: AppFonts.dmSans(
-                                          color: AppColors.gold,
+                                          color: AppColors.navy,
                                           fontWeight: FontWeight.w600,
                                           decoration: TextDecoration.underline,
                                           fontSize: 13,
@@ -275,39 +275,36 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           enabled: _acceptedTerms && !_loading,
                         ),
                         const SizedBox(height: 18),
-                        Row(
-                          children: [
-                            const Expanded(child: Divider(color: AppColors.border)),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10),
-                              child: Text(
-                                'ou',
-                                style: AppFonts.dmSans(color: AppColors.textSecondary),
+                        Text.rich(
+                          TextSpan(
+                            style: AppFonts.dmSans(
+                              color: AppColors.textSecondary,
+                              fontSize: 13.5,
+                            ),
+                            children: [
+                              const TextSpan(
+                                text: 'Vous avez déjà un compte ? ',
                               ),
-                            ),
-                            const Expanded(child: Divider(color: AppColors.border)),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Vous avez déjà un compte ? ',
-                              style: AppFonts.dmSans(color: AppColors.textSecondary),
-                            ),
-                            GestureDetector(
-                              onTap: () => context.go('/login'),
-                              child: Text(
-                                'Se connecter',
-                                style: AppFonts.dmSans(
-                                  color: AppColors.gold,
-                                  fontWeight: FontWeight.w700,
-                                  decoration: TextDecoration.underline,
+                              WidgetSpan(
+                                alignment: PlaceholderAlignment.baseline,
+                                baseline: TextBaseline.alphabetic,
+                                child: GestureDetector(
+                                  onTap: () => context.go('/login'),
+                                  child: Text(
+                                    'Se connecter',
+                                    style: AppFonts.dmSans(
+                                      color: AppColors.navy,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13.5,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          softWrap: false,
                         ),
                       ],
                     ),

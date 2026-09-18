@@ -1,13 +1,32 @@
 /// Paths for EcoAR_Regenerated_Asset_Pack (widgets use these — not full-screen UI JPGs).
 class AppAssets {
-  // Logos
+  // Logos (shared everywhere — splash, headers, about)
   static const logo = 'assets/logos/EcoAR_Kerkennah_Logo_4K.png';
   static const logoAlt = 'assets/logos/logo.png';
+  static const logoMelies = 'assets/logos/melies_logo_gold.png';
+
+  // Institutional partners + studio (credits screen — original colors)
+  static const logoAmbassade = 'assets/partners/ambassade_france_tunisie.png';
+  static const logoInstitutFrancais =
+      'assets/partners/institut_francais_tunisie.png';
+  static const logoSawn = 'assets/partners/sawn.png';
+  static const logoMeliesProduction =
+      'assets/partners/melies_production_technologies.jpg';
 
   // Compressed photo backgrounds (keeps APK installable on emulator)
+  /// CEO splash — rocky cove + marabout (not village_hero / boat quay).
+  static const bgSplash = 'assets/bg/splash_cove.jpg';
   static const bgCoast = 'assets/bg/coast.jpg';
   static const bgVillage = 'assets/bg/village.jpg';
   static const bgBoat = 'assets/bg/boat.jpg';
+  /// Onboarding page 1 — CEO mock coastal boat (user-provided).
+  static const bgOnboardingBoat = 'assets/bg/onboarding_boat.jpg';
+  /// Onboarding page 2 — alley + QR plaque (user-provided).
+  static const bgOnboardingScan = 'assets/bg/onboarding_scan.jpg';
+  /// Onboarding page 3 — harbor boats (user-provided).
+  static const bgOnboardingHarbor = 'assets/bg/onboarding_harbor.jpg';
+  /// Login hero — coastal boats (CEO mock).
+  static const bgLoginHero = 'assets/bg/login_hero.jpg';
   static const bgMap = 'assets/bg/map.jpg';
   static const bgFisherman = 'assets/bg/fisherman.jpg';
   static const bg06 = 'assets/bg/06_placeholder.jpg';
@@ -19,6 +38,7 @@ class AppAssets {
   static const bg12 = 'assets/bg/12_placeholder.jpg';
 
   static const heroCoast = bgCoast;
+  static const heroSplash = bgSplash;
   static const heroVillage = bgVillage;
   static const heroBoat = bgBoat;
   static const heroMap = bgMap;

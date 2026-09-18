@@ -21,7 +21,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late final TextEditingController _phone;
   late final TextEditingController _city;
   bool _saving = false;
-  String _lang = 'FR';
 
   @override
   void initState() {
@@ -76,140 +75,101 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final top = MediaQuery.paddingOf(context).top;
     final bottom = MediaQuery.paddingOf(context).bottom;
-    final h = MediaQuery.sizeOf(context).height;
 
     return Scaffold(
       backgroundColor: AppColors.cream,
       resizeToAvoidBottomInset: true,
       body: Column(
         children: [
-          SizedBox(
-            height: h * 0.28,
-            width: double.infinity,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Image.asset(AppAssets.bgCoast, fit: BoxFit.cover),
-                Container(color: Colors.black.withValues(alpha: 0.18)),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(12, top + 8, 12, 0),
-                  child: Row(
-                    children: [
-                      SoftCircleButton(
-                        icon: Icons.arrow_back_ios_new_rounded,
-                        onPressed: () => AppNav.popOr(context, '/profile'),
-                      ),
-                      const Expanded(child: EcoLogo(compact: true, height: 40)),
-                      LanguageSwitcher(
-                        selected: _lang,
-                        darkBackground: false,
-                        onChanged: (v) => setState(() => _lang = v),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          TealHeader(
+            showBack: true,
+            showLanguage: true,
+            onBack: () => AppNav.popOr(context, '/profile'),
           ),
           Expanded(
-            child: Transform.translate(
-              offset: const Offset(0, -28),
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppColors.cream,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 16,
-                      offset: const Offset(0, -4),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(22, 24, 22, 24 + bottom),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    Text(
+                      'Modifier le profil',
+                      textAlign: TextAlign.center,
+                      style: AppFonts.playfair(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.navy,
+                      ),
                     ),
-                  ],
-                ),
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(22, 26, 22, 24 + bottom),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
+                    const SizedBox(height: 8),
+                    Text(
+                      'Mettez à jour vos informations personnelles pour une meilleure expérience.',
+                      textAlign: TextAlign.center,
+                      style: AppFonts.dmSans(
+                        color: AppColors.textSecondary,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    Stack(
+                      alignment: Alignment.bottomRight,
                       children: [
-                        Text(
-                          'Modifier le profil',
-                          style: AppFonts.playfair(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.navy,
-                          ),
+                        const CircleAvatar(
+                          radius: 48,
+                          backgroundImage: AssetImage(AppAssets.bgCoast),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Mettez à jour vos informations personnelles pour une meilleure expérience.',
-                          textAlign: TextAlign.center,
-                          style: AppFonts.dmSans(color: AppColors.textSecondary, height: 1.4),
-                        ),
-                        const SizedBox(height: 22),
-                        Stack(
-                          alignment: Alignment.bottomRight,
-                          children: [
-                            const CircleAvatar(
-                              radius: 48,
-                              backgroundImage: AssetImage(AppAssets.bgCoast),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: const BoxDecoration(
-                                color: AppColors.navy,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.photo_camera_outlined,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 22),
-                        _LabeledField(
-                          controller: _name,
-                          label: 'Nom',
-                          icon: Icons.person_outline_rounded,
-                          validator: (v) =>
-                              (v == null || v.trim().length < 2) ? 'Nom invalide' : null,
-                        ),
-                        const SizedBox(height: 12),
-                        _LabeledField(
-                          controller: _email,
-                          label: 'Email',
-                          icon: Icons.mail_outline_rounded,
-                          keyboardType: TextInputType.emailAddress,
-                          validator: (v) =>
-                              (v == null || !AuthService.isValidEmail(v)) ? 'Email invalide' : null,
-                        ),
-                        const SizedBox(height: 12),
-                        _LabeledField(
-                          controller: _phone,
-                          label: 'Téléphone',
-                          icon: Icons.phone_outlined,
-                          keyboardType: TextInputType.phone,
-                        ),
-                        const SizedBox(height: 12),
-                        _LabeledField(
-                          controller: _city,
-                          label: 'Ville',
-                          icon: Icons.place_outlined,
-                        ),
-                        const SizedBox(height: 24),
-                        PrimaryButton(
-                          label: _saving ? 'Enregistrement...' : 'Enregistrer',
-                          onPressed: _saving ? () {} : _save,
-                          enabled: !_saving,
+                        SoftCircleButton(
+                          onPressed: () {},
+                          icon: Icons.photo_camera_outlined,
+                          background: AppColors.navy,
+                          foreground: AppColors.white,
+                          size: 34,
                         ),
                       ],
                     ),
-                  ),
+                    const SizedBox(height: 22),
+                    _PillField(
+                      controller: _name,
+                      label: 'Nom complet',
+                      icon: Icons.person_outline_rounded,
+                      validator: (v) =>
+                          (v == null || v.trim().length < 2) ? 'Nom invalide' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    _PillField(
+                      controller: _email,
+                      label: 'Email',
+                      icon: Icons.mail_outline_rounded,
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (v) =>
+                          (v == null || !AuthService.isValidEmail(v))
+                              ? 'Email invalide'
+                              : null,
+                    ),
+                    const SizedBox(height: 12),
+                    _PillField(
+                      controller: _phone,
+                      label: 'Téléphone',
+                      icon: Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 12),
+                    _PillField(
+                      controller: _city,
+                      label: 'Ville',
+                      icon: Icons.place_outlined,
+                    ),
+                    const SizedBox(height: 28),
+                    PrimaryButton(
+                      label: _saving
+                          ? 'Enregistrement...'
+                          : 'Enregistrer les modifications',
+                      onPressed: _saving ? () {} : _save,
+                      enabled: !_saving,
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -220,8 +180,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 }
 
-class _LabeledField extends StatelessWidget {
-  const _LabeledField({
+class _PillField extends StatelessWidget {
+  const _PillField({
     required this.controller,
     required this.label,
     required this.icon,
@@ -241,23 +201,37 @@ class _LabeledField extends StatelessWidget {
       controller: controller,
       keyboardType: keyboardType,
       validator: validator,
-      style: AppFonts.dmSans(color: AppColors.navy, fontWeight: FontWeight.w600),
+      style: AppFonts.dmSans(
+        color: AppColors.navy,
+        fontWeight: FontWeight.w600,
+      ),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: AppFonts.dmSans(color: AppColors.textSecondary),
         prefixIcon: Icon(icon, color: AppColors.navy),
         filled: true,
         fillColor: AppColors.white,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppLayout.radiusPill),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppLayout.radiusPill),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppLayout.radiusPill),
           borderSide: const BorderSide(color: AppColors.navy, width: 1.4),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppLayout.radiusPill),
+          borderSide: const BorderSide(color: Color(0xFF8B2E2E)),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppLayout.radiusPill),
+          borderSide: const BorderSide(color: Color(0xFF8B2E2E), width: 1.4),
         ),
       ),
     );

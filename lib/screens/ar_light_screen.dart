@@ -15,6 +15,7 @@ class ArLightScreen extends StatelessWidget {
     final bottom = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
+      backgroundColor: AppColors.navyDeep,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -27,112 +28,157 @@ class ArLightScreen extends StatelessWidget {
               children: [
                 SoftCircleButton(
                   icon: Icons.arrow_back_ios_new_rounded,
-                  background: Colors.black.withValues(alpha: 0.35),
-                  foreground: Colors.white,
+                  background: Colors.black.withValues(alpha: 0.4),
+                  foreground: AppColors.white,
+                  size: 42,
                   onPressed: () => AppNav.popOr(context, '/scanner'),
                 ),
-                const Expanded(child: EcoLogo(compact: true, height: 40)),
+                const Expanded(
+                  child: Center(child: EcoLogo(compact: true, height: 40)),
+                ),
                 SoftCircleButton(
-                  icon: Icons.menu,
-                  background: Colors.black.withValues(alpha: 0.35),
-                  foreground: Colors.white,
+                  icon: Icons.menu_rounded,
+                  background: Colors.black.withValues(alpha: 0.4),
+                  foreground: AppColors.white,
+                  size: 42,
                   onPressed: () {},
                 ),
               ],
             ),
           ),
-          const Align(
-            alignment: Alignment(0, -0.15),
-            child: PackIcon(AppAssets.iconPinGold, size: 56),
+          Align(
+            alignment: const Alignment(0, -0.18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: AppColors.gold,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.gold.withValues(alpha: 0.45),
+                        blurRadius: 18,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.location_on_rounded,
+                    color: AppColors.white,
+                    size: 28,
+                  ),
+                ),
+                Container(
+                  width: 1.5,
+                  height: 56,
+                  color: AppColors.gold.withValues(alpha: 0.85),
+                ),
+              ],
+            ),
           ),
           Positioned(
-            left: 20,
-            right: 20,
-            bottom: 100 + bottom,
+            left: 16,
+            right: 16,
+            bottom: 108 + bottom,
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(18, 14, 14, 18),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.55),
-                borderRadius: BorderRadius.circular(18),
+                color: Colors.black.withValues(alpha: 0.58),
+                borderRadius: BorderRadius.circular(AppLayout.radiusCard),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: GestureDetector(
-                      onTap: () => AppNav.popOr(context, '/scanner'),
-                      child: const Icon(Icons.close, color: Colors.white, size: 20),
-                    ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Charfiya traditionnelle',
+                          style: AppFonts.playfair(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 22,
+                          ),
+                        ),
+                      ),
+                      SoftCircleButton(
+                        icon: Icons.close_rounded,
+                        background: Colors.white.withValues(alpha: 0.12),
+                        foreground: AppColors.white,
+                        size: 34,
+                        onPressed: () =>
+                            AppNav.popOr(context, '/scanner'),
+                      ),
+                    ],
                   ),
-                  Text(
-                    'Charfiya traditionnelle',
-                    style: AppFonts.dmSans(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Text(
                     'Embarcation emblématique de Kerkennah, utilisée par les pêcheurs depuis des générations.',
-                    style: AppFonts.dmSans(color: Colors.white70, height: 1.35, fontSize: 13),
+                    style: AppFonts.dmSans(
+                      color: Colors.white70,
+                      height: 1.4,
+                      fontSize: 13,
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  // First two tags on one row, third alone (conceptual Wrap 2 then 1)
+                  const SizedBox(height: 14),
                   const Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _Tag(icon: Icons.anchor, label: 'Patrimoine maritime'),
-                      _Tag(icon: Icons.handshake_outlined, label: 'Savoir-faire local'),
-                      _Tag(icon: Icons.place_outlined, label: 'Île Chergui'),
+                      _Tag(label: 'Patrimoine maritime'),
+                      _Tag(label: 'Savoir-faire local'),
+                      _Tag(label: 'Île Chergui'),
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () => AppNav.openAudio(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.gold,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-                      ),
-                      icon: const Icon(Icons.graphic_eq),
-                      label: Text(
-                        "Écouter l'histoire",
-                        style: AppFonts.dmSans(fontWeight: FontWeight.w700),
-                      ),
-                    ),
+                  const SizedBox(height: 16),
+                  PrimaryButton(
+                    label: "Écouter l'histoire",
+                    icon: Icons.volume_up_rounded,
+                    backgroundColor: AppColors.gold,
+                    foregroundColor: AppColors.navy,
+                    onPressed: () => AppNav.openAudio(context),
                   ),
                 ],
               ),
             ),
           ),
           Positioned(
-            left: 24,
-            right: 24,
-            bottom: 16 + bottom,
+            left: 28,
+            right: 28,
+            bottom: 18 + bottom,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _BottomAction(
+                _ArNavButton(
                   icon: Icons.map_outlined,
                   label: 'Carte',
                   onTap: () => AppNav.goMap(context),
                 ),
-                _BottomAction(
-                  icon: Icons.qr_code_scanner,
+                _ArNavButton(
+                  icon: Icons.qr_code_scanner_rounded,
                   label: 'Scanner',
-                  highlight: true,
-                  onTap: () => AppNav.goScanner(context),
+                  large: true,
+                  onTap: () => AppNav.popOr(context, '/scanner'),
                 ),
-                _BottomAction(
-                  icon: Icons.info_outline,
+                _ArNavButton(
+                  icon: Icons.info_outline_rounded,
                   label: 'À propos',
-                  onTap: () => AppNav.goProfile(context),
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'EcoAR Kerkennah — médiation patrimoniale en réalité augmentée.',
+                          style: AppFonts.dmSans(color: AppColors.white),
+                        ),
+                        backgroundColor: AppColors.navy,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -144,62 +190,80 @@ class ArLightScreen extends StatelessWidget {
 }
 
 class _Tag extends StatelessWidget {
-  const _Tag({required this.icon, required this.label});
-  final IconData icon;
+  const _Tag({required this.label});
+
   final String label;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white38),
+        color: AppColors.navy.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(AppLayout.radiusPill),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: Colors.white70),
-          const SizedBox(width: 6),
-          Text(label, style: AppFonts.dmSans(color: Colors.white70, fontSize: 11)),
-        ],
+      child: Text(
+        label,
+        style: AppFonts.dmSans(
+          color: AppColors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
 }
 
-class _BottomAction extends StatelessWidget {
-  const _BottomAction({
+class _ArNavButton extends StatelessWidget {
+  const _ArNavButton({
     required this.icon,
     required this.label,
     required this.onTap,
-    this.highlight = false,
+    this.large = false,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  final bool highlight;
+  final bool large;
 
   @override
   Widget build(BuildContext context) {
+    final size = large ? 64.0 : 50.0;
     return GestureDetector(
       onTap: onTap,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: highlight ? 58 : 48,
-            height: highlight ? 58 : 48,
+            width: size,
+            height: size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: highlight
-                  ? const Color(0xFF4FC3F7).withValues(alpha: 0.35)
-                  : Colors.black.withValues(alpha: 0.45),
+              color: AppColors.navy.withValues(alpha: large ? 0.92 : 0.78),
+              border: Border.all(
+                color: AppColors.white.withValues(alpha: 0.22),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.28),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            child: Icon(icon, color: Colors.white),
+            child: Icon(icon, color: AppColors.white, size: large ? 28 : 22),
           ),
-          const SizedBox(height: 4),
-          Text(label, style: AppFonts.dmSans(color: Colors.white, fontSize: 11)),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: AppFonts.dmSans(
+              color: AppColors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
