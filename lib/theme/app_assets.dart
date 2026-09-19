@@ -30,6 +30,8 @@ class AppAssets {
   static const bgLoginHero = 'assets/bg/login_hero.jpg';
   /// Signup hero — single full-bleed coastal scene (no user photo stack).
   static const bgSignupHero = 'assets/images/bg_signup_hero.jpg';
+  /// Forgot password — soft dusk lagoon coastal scene.
+  static const bgForgotPassword = 'assets/images/bg_forgot_password.jpg';
   /// Splash / loading alternate full-screen ocean.
   static const bgOceanFull = 'assets/images/bg_ocean_full.jpg';
   static const bgKerkennahHero = bgSignupHero;

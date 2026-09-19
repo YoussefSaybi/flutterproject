@@ -133,10 +133,10 @@ class _EcoArForgotPasswordScreenState extends State<EcoArForgotPasswordScreen> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              AppAssets.bgLoginHero,
+              AppAssets.bgForgotPassword,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Image.asset(
-                AppAssets.bgCoast,
+                AppAssets.bgLoginHero,
                 fit: BoxFit.cover,
               ),
             ),
