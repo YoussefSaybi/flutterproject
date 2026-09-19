@@ -6,6 +6,7 @@ import '../navigation/app_nav.dart';
 import '../services/auth_service.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_fonts.dart';
+import '../utils/form_validators.dart';
 
 /// EcoAR Kerkennah sign-up — coastal hero + cream form card (mock layout).
 class EcoArSignUpScreen extends StatefulWidget {
@@ -29,6 +30,8 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
   bool _isConfirmPasswordVisible = false;
   bool _acceptedTerms = false;
   bool _loading = false;
+  bool _submitted = false;
+  int _passwordScore = 0;
 
   late final TapGestureRecognizer _termsTap;
   late final TapGestureRecognizer _privacyTap;
@@ -46,10 +49,19 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
     super.initState();
     _termsTap = TapGestureRecognizer()..onTap = _onTerms;
     _privacyTap = TapGestureRecognizer()..onTap = _onPrivacy;
+    _password.addListener(_onPasswordChanged);
+  }
+
+  void _onPasswordChanged() {
+    final score = FormValidators.passwordStrength(_password.text);
+    if (score != _passwordScore) {
+      setState(() => _passwordScore = score);
+    }
   }
 
   @override
   void dispose() {
+    _password.removeListener(_onPasswordChanged);
     _termsTap.dispose();
     _privacyTap.dispose();
     _name.dispose();
@@ -84,6 +96,7 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
   Future<void> _onSignUp() async {
     if (_loading) return;
     FocusScope.of(context).unfocus();
+    setState(() => _submitted = true);
     if (!_formKey.currentState!.validate()) return;
     if (!_acceptedTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -190,6 +203,9 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                       ),
                       child: Form(
                         key: _formKey,
+                        autovalidateMode: _submitted
+                            ? AutovalidateMode.onUserInteraction
+                            : AutovalidateMode.disabled,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
@@ -219,12 +235,9 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                               hint: 'Nom complet',
                               prefix: Icons.person_outline_rounded,
                               textInputAction: TextInputAction.next,
-                              validator: (v) {
-                                if (v == null || v.trim().isEmpty) {
-                                  return 'Le nom est requis.';
-                                }
-                                return null;
-                              },
+                              textCapitalization: TextCapitalization.words,
+                              autofillHints: const [AutofillHints.name],
+                              validator: FormValidators.name,
                             ),
                             const SizedBox(height: 14),
                             _PillFormField(
@@ -233,15 +246,8 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                               prefix: Icons.mail_outline_rounded,
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.next,
-                              validator: (v) {
-                                if (v == null || v.trim().isEmpty) {
-                                  return "L'email est requis.";
-                                }
-                                if (!AuthService.isValidEmail(v)) {
-                                  return 'Adresse email invalide.';
-                                }
-                                return null;
-                              },
+                              autofillHints: const [AutofillHints.email],
+                              validator: FormValidators.email,
                             ),
                             const SizedBox(height: 14),
                             _PillFormField(
@@ -250,6 +256,7 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                               prefix: Icons.lock_outline_rounded,
                               obscureText: !_isPasswordVisible,
                               textInputAction: TextInputAction.next,
+                              autofillHints: const [AutofillHints.newPassword],
                               suffix: IconButton(
                                 tooltip: _isPasswordVisible
                                     ? 'Masquer le mot de passe'
@@ -266,16 +273,12 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                                   size: 22,
                                 ),
                               ),
-                              validator: (v) {
-                                if (v == null || v.isEmpty) {
-                                  return 'Le mot de passe est requis.';
-                                }
-                                if (v.length < 8) {
-                                  return 'Au moins 8 caractères.';
-                                }
-                                return null;
-                              },
+                              validator: FormValidators.password,
                             ),
+                            if (_password.text.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              _PasswordStrengthBar(score: _passwordScore),
+                            ],
                             const SizedBox(height: 14),
                             _PillFormField(
                               controller: _confirmPassword,
@@ -283,6 +286,7 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                               prefix: Icons.lock_outline_rounded,
                               obscureText: !_isConfirmPasswordVisible,
                               textInputAction: TextInputAction.done,
+                              autofillHints: const [AutofillHints.newPassword],
                               onFieldSubmitted: (_) {
                                 if (canSubmit) _onSignUp();
                               },
@@ -302,15 +306,10 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                                   size: 22,
                                 ),
                               ),
-                              validator: (v) {
-                                if (v == null || v.isEmpty) {
-                                  return 'Confirmez le mot de passe.';
-                                }
-                                if (v != _password.text) {
-                                  return 'Les mots de passe ne correspondent pas.';
-                                }
-                                return null;
-                              },
+                              validator: (v) => FormValidators.confirmPassword(
+                                v,
+                                _password.text,
+                              ),
                             ),
                             const SizedBox(height: 20),
                             Row(
@@ -507,6 +506,8 @@ class _PillFormField extends StatelessWidget {
     this.textInputAction,
     this.validator,
     this.onFieldSubmitted,
+    this.autofillHints,
+    this.textCapitalization = TextCapitalization.none,
   });
 
   final TextEditingController controller;
@@ -518,6 +519,8 @@ class _PillFormField extends StatelessWidget {
   final TextInputAction? textInputAction;
   final String? Function(String?)? validator;
   final void Function(String)? onFieldSubmitted;
+  final Iterable<String>? autofillHints;
+  final TextCapitalization textCapitalization;
 
   static const _navy = Color(0xFF1B4A5A);
   static const _border = Color(0xFFD8E3E8);
@@ -529,8 +532,11 @@ class _PillFormField extends StatelessWidget {
       obscureText: obscureText,
       keyboardType: keyboardType,
       textInputAction: textInputAction,
+      textCapitalization: textCapitalization,
+      autofillHints: autofillHints,
       validator: validator,
       onFieldSubmitted: onFieldSubmitted,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       style: AppFonts.dmSans(fontSize: 15, color: _navy),
       decoration: InputDecoration(
         hintText: hint,
@@ -542,6 +548,7 @@ class _PillFormField extends StatelessWidget {
         suffixIcon: suffix,
         filled: true,
         fillColor: Colors.white,
+        errorMaxLines: 2,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         border: OutlineInputBorder(
@@ -565,6 +572,54 @@ class _PillFormField extends StatelessWidget {
           borderSide: const BorderSide(color: Color(0xFF8B2E2E), width: 1.4),
         ),
       ),
+    );
+  }
+}
+
+class _PasswordStrengthBar extends StatelessWidget {
+  const _PasswordStrengthBar({required this.score});
+
+  final int score;
+
+  @override
+  Widget build(BuildContext context) {
+    const colors = [
+      Color(0xFF8B2E2E),
+      Color(0xFFC97B3A),
+      Color(0xFFC9A05C),
+      Color(0xFF2F7A4A),
+      Color(0xFF1B6B3A),
+    ];
+    final color = colors[score.clamp(0, 4)];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: List.generate(4, (i) {
+            final filled = i < score;
+            return Expanded(
+              child: Container(
+                height: 4,
+                margin: EdgeInsets.only(right: i < 3 ? 4 : 0),
+                decoration: BoxDecoration(
+                  color: filled ? color : const Color(0xFFD8E3E8),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Sécurité : ${FormValidators.passwordStrengthLabel(score)}'
+          ' — 8+ car., majuscule, minuscule, chiffre, symbole',
+          style: AppFonts.dmSans(
+            fontSize: 11,
+            color: color,
+            height: 1.3,
+          ),
+        ),
+      ],
     );
   }
 }

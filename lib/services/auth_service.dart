@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../utils/form_validators.dart';
 import 'app_session.dart';
 
 class AppUser {
@@ -60,34 +61,28 @@ class AuthService extends ChangeNotifier {
   static String _normalize(String value) => value.trim().toLowerCase();
 
   static bool isValidEmail(String value) {
-    final v = value.trim();
-    return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v);
+    return FormValidators.email(value) == null;
   }
 
   static bool isValidPhone(String value) {
-    final digits = value.replaceAll(RegExp(r'\D'), '');
-    return digits.length >= 8;
+    return FormValidators.phone(value) == null;
   }
 
   static bool isValidIdentifier(String value) =>
-      isValidEmail(value) || isValidPhone(value);
+      FormValidators.loginIdentifier(value) == null;
+
 
   AuthResult login({
     required String identifier,
     required String password,
   }) {
+    final idErr = FormValidators.loginIdentifier(identifier);
+    if (idErr != null) return AuthResult.fail(idErr);
+    final passErr = FormValidators.loginPassword(password);
+    if (passErr != null) return AuthResult.fail(passErr);
+
     final id = identifier.trim();
     final pass = password;
-
-    if (id.isEmpty || pass.isEmpty) {
-      return AuthResult.fail('Veuillez remplir email/téléphone et mot de passe.');
-    }
-    if (!isValidIdentifier(id)) {
-      return AuthResult.fail('Email ou numéro de téléphone invalide.');
-    }
-    if (pass.length < 6) {
-      return AuthResult.fail('Le mot de passe doit contenir au moins 6 caractères.');
-    }
 
     final phoneDigits = id.replaceAll(RegExp(r'\D'), '');
     AppUser? user = _users[_normalize(id)];
@@ -121,38 +116,90 @@ class AuthService extends ChangeNotifier {
     required String confirmPassword,
     required bool acceptedTerms,
   }) {
-    final n = name.trim();
-    final e = email.trim();
-
-    if (n.isEmpty || e.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
-      return AuthResult.fail('Veuillez remplir tous les champs.');
-    }
-    if (n.length < 2) {
-      return AuthResult.fail('Nom complet trop court.');
-    }
-    if (!isValidEmail(e)) {
-      return AuthResult.fail('Adresse email invalide.');
-    }
-    if (password.length < 8) {
-      return AuthResult.fail('Le mot de passe doit contenir au moins 8 caractères.');
-    }
-    if (password != confirmPassword) {
-      return AuthResult.fail('Les mots de passe ne correspondent pas.');
-    }
+    final nameErr = FormValidators.name(name);
+    if (nameErr != null) return AuthResult.fail(nameErr);
+    final emailErr = FormValidators.email(email);
+    if (emailErr != null) return AuthResult.fail(emailErr);
+    final passErr = FormValidators.password(password);
+    if (passErr != null) return AuthResult.fail(passErr);
+    final confirmErr =
+        FormValidators.confirmPassword(confirmPassword, password);
+    if (confirmErr != null) return AuthResult.fail(confirmErr);
     if (!acceptedTerms) {
       return AuthResult.fail('Veuillez accepter les conditions d\'utilisation.');
     }
+
+    final e = email.trim();
     if (_users.containsKey(_normalize(e))) {
       return AuthResult.fail('Un compte existe déjà avec cet email.');
     }
 
-    final user = AppUser(name: n, email: e, password: password);
+    final user = AppUser(name: name.trim(), email: e, password: password);
     _users[_normalize(e)] = user;
     _current = user;
     notifyListeners();
     // ignore: unawaited_futures
     AppSession.instance.persistSession(user.email);
     return AuthResult.ok('Compte créé avec succès.');
+  }
+
+  /// Demo reset codes keyed by normalized email (no real email send).
+  final Map<String, String> _resetCodes = {};
+
+  /// Request a password-reset code (demo: always "123456" if account exists).
+  AuthResult requestPasswordReset({required String email}) {
+    final emailErr = FormValidators.email(email);
+    if (emailErr != null) return AuthResult.fail(emailErr);
+
+    final key = _normalize(email);
+    if (!_users.containsKey(key)) {
+      // Same message either way to avoid account enumeration in UX copy,
+      // but for demo we still only set a code when the user exists.
+      return AuthResult.ok(
+        'Si un compte existe pour cet email, un code de réinitialisation a été envoyé.',
+      );
+    }
+
+    _resetCodes[key] = '123456';
+    return AuthResult.ok(
+      'Un code a été envoyé à ${email.trim()} (démo : 123456).',
+    );
+  }
+
+  AuthResult resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+    required String confirmPassword,
+  }) {
+    final emailErr = FormValidators.email(email);
+    if (emailErr != null) return AuthResult.fail(emailErr);
+
+    final c = code.trim();
+    if (c.isEmpty) return AuthResult.fail('Le code est requis.');
+    if (!RegExp(r'^\d{6}$').hasMatch(c)) {
+      return AuthResult.fail('Le code doit contenir 6 chiffres.');
+    }
+
+    final passErr = FormValidators.password(newPassword);
+    if (passErr != null) return AuthResult.fail(passErr);
+    final confirmErr =
+        FormValidators.confirmPassword(confirmPassword, newPassword);
+    if (confirmErr != null) return AuthResult.fail(confirmErr);
+
+    final key = _normalize(email);
+    final user = _users[key];
+    if (user == null) {
+      return AuthResult.fail('Aucun compte trouvé avec cet email.');
+    }
+    if (_resetCodes[key] != c) {
+      return AuthResult.fail('Code incorrect ou expiré.');
+    }
+
+    _users[key] = user.copyWith(password: newPassword);
+    _resetCodes.remove(key);
+    notifyListeners();
+    return AuthResult.ok('Mot de passe mis à jour. Vous pouvez vous connecter.');
   }
 
   AuthResult continueAsGuest({required String provider}) {

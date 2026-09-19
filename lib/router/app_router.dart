@@ -8,6 +8,7 @@ import '../screens/credits_screen.dart';
 import '../screens/edit_profile_screen.dart';
 import '../screens/favorites_screen.dart';
 import '../screens/home_screen.dart';
+import '../screens/eco_ar_forgot_password_screen.dart';
 import '../screens/eco_ar_login_screen.dart';
 import '../screens/map_screen.dart';
 import '../screens/onboarding_screen.dart';
@@ -67,6 +68,13 @@ GoRouter createRouter() {
         pageBuilder: (_, state) => _fadePage(
           key: state.pageKey,
           child: const EcoArLoginScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        pageBuilder: (_, state) => _fadePage(
+          key: state.pageKey,
+          child: const EcoArForgotPasswordScreen(),
         ),
       ),
       GoRoute(path: '/signup', builder: (_, __) => const EcoArSignUpScreen()),

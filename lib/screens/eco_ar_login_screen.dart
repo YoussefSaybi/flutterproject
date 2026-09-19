@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../navigation/app_nav.dart';
 import '../services/auth_service.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_fonts.dart';
+import '../utils/form_validators.dart';
 
 /// EcoAR Kerkennah login — hero photo + overlapping cream form card.
 class EcoArLoginScreen extends StatefulWidget {
@@ -18,10 +20,12 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
   static const _navy = Color(0xFF1B4A5A);
   static const _cream = Color(0xFFFAF7F0);
 
+  final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _obscure = true;
   bool _loading = false;
+  bool _submitted = false;
 
   static const _goldKnockout = ColorFilter.matrix(<double>[
     1, 0, 0, 0, 0,
@@ -38,9 +42,11 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
   }
 
   Future<void> _onLogin() async {
-    // TODO: replace local demo auth with real backend / OAuth flow
     if (_loading) return;
     FocusScope.of(context).unfocus();
+    setState(() => _submitted = true);
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
     setState(() => _loading = true);
     final result = AuthService.instance.login(
       identifier: _email.text,
@@ -59,13 +65,7 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
   }
 
   void _onForgotPassword() {
-    // TODO: navigate to forgot-password / reset flow
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Réinitialisation du mot de passe — bientôt disponible.'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    context.push('/forgot-password');
   }
 
   Future<void> _onGoogle() async {
@@ -164,7 +164,12 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
                         ),
                       ],
                     ),
-                    child: Column(
+                    child: Form(
+                      key: _formKey,
+                      autovalidateMode: _submitted
+                          ? AutovalidateMode.onUserInteraction
+                          : AutovalidateMode.disabled,
+                      child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
@@ -193,6 +198,13 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
                           hint: 'Email ou numéro de téléphone',
                           prefix: Icons.mail_outline_rounded,
                           keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          autofillHints: const [
+                            AutofillHints.username,
+                            AutofillHints.email,
+                            AutofillHints.telephoneNumber,
+                          ],
+                          validator: FormValidators.loginIdentifier,
                         ),
                         const SizedBox(height: 14),
                         _PillField(
@@ -200,7 +212,14 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
                           hint: 'Mot de passe',
                           prefix: Icons.lock_outline_rounded,
                           obscureText: _obscure,
+                          textInputAction: TextInputAction.done,
+                          autofillHints: const [AutofillHints.password],
+                          onFieldSubmitted: (_) => _onLogin(),
+                          validator: FormValidators.loginPassword,
                           suffix: IconButton(
+                            tooltip: _obscure
+                                ? 'Afficher le mot de passe'
+                                : 'Masquer le mot de passe',
                             onPressed: () =>
                                 setState(() => _obscure = !_obscure),
                             icon: Icon(
@@ -347,6 +366,7 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
                         const SizedBox(height: 12),
                       ],
                     ),
+                    ),
                   ),
                   SizedBox(height: bottomPeek),
                 ],
@@ -367,6 +387,10 @@ class _PillField extends StatelessWidget {
     this.obscureText = false,
     this.suffix,
     this.keyboardType,
+    this.textInputAction,
+    this.validator,
+    this.onFieldSubmitted,
+    this.autofillHints,
   });
 
   final TextEditingController controller;
@@ -375,17 +399,29 @@ class _PillField extends StatelessWidget {
   final bool obscureText;
   final Widget? suffix;
   final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final String? Function(String?)? validator;
+  final void Function(String)? onFieldSubmitted;
+  final Iterable<String>? autofillHints;
 
   static const _navy = Color(0xFF1B4A5A);
   static const _border = Color(0xFFD8E3E8);
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      autofillHints: autofillHints,
+      validator: validator,
+      onFieldSubmitted: onFieldSubmitted,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       style: AppFonts.dmSans(fontSize: 15, color: _navy),
+      inputFormatters: [
+        FilteringTextInputFormatter.deny(RegExp(r'[\n\r]')),
+      ],
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: AppFonts.dmSans(
@@ -396,6 +432,7 @@ class _PillField extends StatelessWidget {
         suffixIcon: suffix,
         filled: true,
         fillColor: Colors.white,
+        errorMaxLines: 2,
         contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
@@ -408,6 +445,14 @@ class _PillField extends StatelessWidget {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
           borderSide: const BorderSide(color: _navy, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: const BorderSide(color: Color(0xFF8B2E2E)),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: const BorderSide(color: Color(0xFF8B2E2E), width: 1.4),
         ),
       ),
     );
