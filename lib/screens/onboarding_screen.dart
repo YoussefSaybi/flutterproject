@@ -9,6 +9,7 @@ import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../widgets/common_widgets.dart';
+import '../widgets/onboarding_micro_interactions.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -20,6 +21,16 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _controller = PageController();
   int _index = 0;
+  double _page = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {
+      final p = _controller.page;
+      if (p != null && p != _page) setState(() => _page = p);
+    });
+  }
 
   @override
   void dispose() {
@@ -30,7 +41,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _goTo(int page) {
     _controller.animateToPage(
       page,
-      duration: const Duration(milliseconds: 340),
+      duration: const Duration(milliseconds: 480),
       curve: Curves.easeOutCubic,
     );
   }
@@ -55,20 +66,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final bottom = MediaQuery.paddingOf(context).bottom;
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: Colors.black,
       body: PageView(
         controller: _controller,
+        physics: const BouncingScrollPhysics(),
+        clipBehavior: Clip.hardEdge,
         onPageChanged: (i) => setState(() => _index = i),
         children: [
-          _OnboardingPage1(bottom: bottom, onNext: _next, onDotTap: _goTo),
+          _OnboardingPage1(
+            bottom: bottom,
+            active: _index == 0,
+            pageDelta: _page - 0,
+            onNext: _next,
+            onDotTap: _goTo,
+          ),
           _OnboardingPage2(
             bottom: bottom,
+            active: _index == 1,
+            pageDelta: _page - 1,
             onNext: _next,
             onSkip: _skip,
             onDotTap: _goTo,
           ),
           _OnboardingPage3(
             bottom: bottom,
+            active: _index == 2,
+            pageDelta: _page - 2,
             onStart: _next,
             onSkip: _skip,
             onDotTap: _goTo,
@@ -79,83 +102,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-class _Dots extends StatelessWidget {
-  const _Dots({
-    required this.index,
-    required this.onTap,
-  });
-
-  final int index;
-  final ValueChanged<int> onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(3, (i) {
-        final active = i == index;
-        return GestureDetector(
-          onTap: () => onTap(i),
-          behavior: HitTestBehavior.opaque,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: active ? 9 : 8,
-              height: active ? 9 : 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: active
-                    ? AppColors.gold
-                    : const Color(0xFFD0D5D8),
-              ),
-            ),
-          ),
-        );
-      }),
-    );
-  }
-}
-
-/// Pill-outline "Passer" — white text + thin white border (screens 2 & 3 only).
-class _SkipPill extends StatelessWidget {
-  const _SkipPill({required this.onSkip});
-  final VoidCallback onSkip;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: onSkip,
-      style: TextButton.styleFrom(
-        foregroundColor: AppColors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        minimumSize: Size.zero,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        side: BorderSide(color: AppColors.white.withValues(alpha: 0.9), width: 1),
-        shape: const StadiumBorder(),
-      ),
-      child: Text(
-        'Passer',
-        style: AppFonts.dmSans(
-          fontWeight: FontWeight.w600,
-          fontSize: 13,
-          color: AppColors.white,
-        ),
-      ),
-    );
-  }
-}
-
 /// Screen 1 — exact CEO mock: full-bleed boat photo, gold logo, left copy,
 /// gold dots, teal Suivant pill.
 class _OnboardingPage1 extends StatelessWidget {
   const _OnboardingPage1({
     required this.bottom,
+    required this.active,
+    required this.pageDelta,
     required this.onNext,
     required this.onDotTap,
   });
 
   final double bottom;
+  final bool active;
+  final double pageDelta;
   final VoidCallback onNext;
   final ValueChanged<int> onDotTap;
 
@@ -164,11 +124,9 @@ class _OnboardingPage1 extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.asset(
-          AppAssets.bgOnboardingBoat,
-          fit: BoxFit.cover,
-          alignment: Alignment.center,
-          gaplessPlayback: true,
+        KenBurnsBackground(
+          asset: AppAssets.bgOnboardingBoat,
+          active: active,
         ),
         // Very light sky wash — keeps navy type readable, photo stays vivid
         DecoratedBox(
@@ -203,47 +161,81 @@ class _OnboardingPage1 extends StatelessWidget {
         SafeArea(
           child: Padding(
             padding: EdgeInsets.fromLTRB(28, 10, 28, 18 + bottom),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 36),
-                  child: Center(
-                    child: Image.asset(
-                      AppAssets.logo,
-                      width: MediaQuery.sizeOf(context).width * 0.92,
-                      fit: BoxFit.contain,
+            child: ParallaxShift(
+              pageDelta: pageDelta,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  OnboardingEntrance(
+                    active: active,
+                    child: FloatingLogo(
+                      active: active,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 20),
+                        child: Center(
+                          child: Image.asset(
+                            AppAssets.logo,
+                            height: 72,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                Text(
-                  'Découvrez\nKerkennah\nautrement',
-                  textAlign: TextAlign.left,
-                  style: AppFonts.playfair(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.navy,
-                    height: 1.18,
+                  OnboardingEntrance(
+                    active: active,
+                    delay: const Duration(milliseconds: 90),
+                    child: Text(
+                      'Découvrez\nKerkennah\nautrement',
+                      textAlign: TextAlign.left,
+                      style: AppFonts.playfair(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.navy,
+                        height: 1.18,
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  'Explorez un patrimoine\n'
-                  'riche grâce à la réalité\n'
-                  'augmentée et des contenus immersifs.',
-                  textAlign: TextAlign.left,
-                  style: AppFonts.dmSans(
-                    fontSize: 15,
-                    color: const Color(0xFF4A5560),
-                    height: 1.45,
-                    fontWeight: FontWeight.w400,
+                  const SizedBox(height: 14),
+                  OnboardingEntrance(
+                    active: active,
+                    delay: const Duration(milliseconds: 180),
+                    offset: 14,
+                    child: Text(
+                      'Explorez un patrimoine\n'
+                      'riche grâce à la réalité\n'
+                      'augmentée et des contenus immersifs.',
+                      textAlign: TextAlign.left,
+                      style: AppFonts.dmSans(
+                        fontSize: 15,
+                        color: const Color(0xFF4A5560),
+                        height: 1.45,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                   ),
-                ),
-                const Spacer(),
-                _Dots(index: 0, onTap: onDotTap),
-                const SizedBox(height: 16),
-                PrimaryButton(label: 'Suivant', onPressed: onNext),
-              ],
+                  const Spacer(),
+                  OnboardingEntrance(
+                    active: active,
+                    delay: const Duration(milliseconds: 260),
+                    offset: 12,
+                    child: Column(
+                      children: [
+                        OnboardingDots(
+                          index: 0,
+                          onTap: onDotTap,
+                          inactiveColor: Colors.white.withValues(alpha: 0.75),
+                        ),
+                        const SizedBox(height: 16),
+                        PrimaryButton(
+                          label: 'Suivant',
+                          onPressed: onNext,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -256,12 +248,16 @@ class _OnboardingPage1 extends StatelessWidget {
 class _OnboardingPage2 extends StatelessWidget {
   const _OnboardingPage2({
     required this.bottom,
+    required this.active,
+    required this.pageDelta,
     required this.onNext,
     required this.onSkip,
     required this.onDotTap,
   });
 
   final double bottom;
+  final bool active;
+  final double pageDelta;
   final VoidCallback onNext;
   final VoidCallback onSkip;
   final ValueChanged<int> onDotTap;
@@ -281,11 +277,9 @@ class _OnboardingPage2 extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.asset(
-          AppAssets.bgOnboardingScan,
-          fit: BoxFit.cover,
-          alignment: Alignment.center,
-          gaplessPlayback: true,
+        KenBurnsBackground(
+          asset: AppAssets.bgOnboardingScan,
+          active: active,
         ),
         // Soft top wash for logo + Passer readability
         DecoratedBox(
@@ -307,136 +301,123 @@ class _OnboardingPage2 extends StatelessWidget {
           top: scanRect.top,
           width: scanRect.width,
           height: scanRect.height,
-          child: const IgnorePointer(child: _ArScanCorners()),
+          child: IgnorePointer(
+            child: PulsingScanFrame(
+              active: active,
+              child: const _ArScanCorners(),
+            ),
+          ),
         ),
         SafeArea(
           bottom: false,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 6, 12, 0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(width: 56),
-                    Expanded(
-                      child: Center(
-                        child: Image.asset(
-                          AppAssets.logo,
-                          height: 64,
-                          fit: BoxFit.contain,
+          child: ParallaxShift(
+            pageDelta: pageDelta,
+            factor: 22,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 6, 12, 0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(width: 56),
+                      Expanded(
+                        child: OnboardingEntrance(
+                          active: active,
+                          child: FloatingLogo(
+                            active: active,
+                            child: Center(
+                              child: Image.asset(
+                                AppAssets.logo,
+                                height: 64,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    TextButton(
-                      onPressed: onSkip,
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      OnboardingEntrance(
+                        active: active,
+                        delay: const Duration(milliseconds: 70),
+                        offset: 8,
+                        child: OnboardingSkipButton(onSkip: onSkip),
                       ),
-                      child: Text(
-                        'Passer',
-                        style: AppFonts.dmSans(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const Spacer(),
-              // Frosted glass bottom sheet (matches CEO mock)
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(36)),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-                  child: Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.fromLTRB(24, 26, 24, 20 + bottom),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.82),
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(36),
-                      ),
-                      border: Border(
-                        top: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const _GoldCircleGlyph(
-                          child: CustomPaint(painter: _QrScanIconPainter()),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Scannez, explorez, découvrez',
-                          textAlign: TextAlign.center,
-                          style: AppFonts.playfair(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.navy,
-                            height: 1.2,
+                const Spacer(),
+                // Frosted glass bottom sheet (matches CEO mock)
+                GlassSheetReveal(
+                  active: active,
+                  child: ClipRRect(
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(36)),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.fromLTRB(24, 26, 24, 20 + bottom),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.82),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(36),
+                          ),
+                          border: Border(
+                            top: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              width: 1,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Identifiez les lieux patrimoniaux et accédez à leurs\n'
-                          'histoires uniques.',
-                          textAlign: TextAlign.center,
-                          style: AppFonts.dmSans(
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                            height: 1.4,
-                          ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            AnimatedGoldGlyph(
+                              pulse: active,
+                              child: const CustomPaint(
+                                painter: _QrScanIconPainter(),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Scannez, explorez, découvrez',
+                              textAlign: TextAlign.center,
+                              style: AppFonts.playfair(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.navy,
+                                height: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Identifiez les lieux patrimoniaux et accédez à leurs\n'
+                              'histoires uniques.',
+                              textAlign: TextAlign.center,
+                              style: AppFonts.dmSans(
+                                fontSize: 14,
+                                color: AppColors.textSecondary,
+                                height: 1.4,
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            OnboardingDots(index: 1, onTap: onDotTap),
+                            const SizedBox(height: 14),
+                            PrimaryButton(
+                              label: 'Suivant',
+                              onPressed: onNext,
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 18),
-                        _Dots(index: 1, onTap: onDotTap),
-                        const SizedBox(height: 14),
-                        PrimaryButton(label: 'Suivant', onPressed: onNext),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Shared gold ring + soft gold wash used by onboarding feature icons.
-class _GoldCircleGlyph extends StatelessWidget {
-  const _GoldCircleGlyph({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 58,
-      height: 58,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: AppColors.gold.withValues(alpha: 0.12),
-        border: Border.all(color: AppColors.gold, width: 1.6),
-      ),
-      child: Center(
-        child: SizedBox(width: 28, height: 28, child: child),
-      ),
     );
   }
 }
@@ -631,12 +612,16 @@ class _ArCornersPainter extends CustomPainter {
 class _OnboardingPage3 extends StatelessWidget {
   const _OnboardingPage3({
     required this.bottom,
+    required this.active,
+    required this.pageDelta,
     required this.onStart,
     required this.onSkip,
     required this.onDotTap,
   });
 
   final double bottom;
+  final bool active;
+  final double pageDelta;
   final VoidCallback onStart;
   final VoidCallback onSkip;
   final ValueChanged<int> onDotTap;
@@ -646,11 +631,10 @@ class _OnboardingPage3 extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.asset(
-          AppAssets.bgOnboardingHarbor,
-          fit: BoxFit.cover,
+        KenBurnsBackground(
+          asset: AppAssets.bgOnboardingHarbor,
+          active: active,
           alignment: const Alignment(0, -0.08),
-          gaplessPlayback: true,
         ),
         // Soft sky wash for navy headline readability
         DecoratedBox(
@@ -669,91 +653,128 @@ class _OnboardingPage3 extends StatelessWidget {
         ),
         SafeArea(
           bottom: false,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(width: 72),
-                    Expanded(
-                      child: Center(
-                        child: Image.asset(
-                          AppAssets.logo,
-                          height: 64,
-                          fit: BoxFit.contain,
+          child: ParallaxShift(
+            pageDelta: pageDelta,
+            factor: 24,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(width: 72),
+                      Expanded(
+                        child: OnboardingEntrance(
+                          active: active,
+                          child: FloatingLogo(
+                            active: active,
+                            child: Center(
+                              child: Image.asset(
+                                AppAssets.logo,
+                                height: 64,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    _SkipPill(onSkip: onSkip),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 28),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  children: [
-                    Text(
-                      "Vivez l'histoire de\nKerkennah",
-                      textAlign: TextAlign.center,
-                      style: AppFonts.playfair(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.navy,
-                        height: 1.2,
+                      OnboardingEntrance(
+                        active: active,
+                        delay: const Duration(milliseconds: 70),
+                        offset: 8,
+                        child: OnboardingSkipButton(
+                          onSkip: onSkip,
+                          outlined: true,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Des parcours thématiques pour une découverte\n'
-                      'immersive du patrimoine.',
-                      textAlign: TextAlign.center,
-                      style: AppFonts.dmSans(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                        height: 1.45,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              ClipPath(
-                clipper: const _WaveTopClipper(),
-                child: Container(
-                  width: double.infinity,
-                  color: AppColors.cream,
-                  padding: EdgeInsets.fromLTRB(20, 40, 20, 20 + bottom),
-                  child: Column(
-                    children: [
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _ThemeFeatureIcon(
-                            kind: _ThemeIconKind.patrimoine,
-                            label: 'Patrimoine',
-                          ),
-                          _ThemeFeatureIcon(
-                            kind: _ThemeIconKind.culture,
-                            label: 'Culture',
-                          ),
-                          _ThemeFeatureIcon(
-                            kind: _ThemeIconKind.traditions,
-                            label: 'Traditions',
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      _Dots(index: 2, onTap: onDotTap),
-                      const SizedBox(height: 14),
-                      PrimaryButton(label: 'Commencer', onPressed: onStart),
                     ],
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 28),
+                OnboardingEntrance(
+                  active: active,
+                  delay: const Duration(milliseconds: 110),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Column(
+                      children: [
+                        Text(
+                          "Vivez l'histoire de\nKerkennah",
+                          textAlign: TextAlign.center,
+                          style: AppFonts.playfair(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.navy,
+                            height: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Des parcours thématiques pour une découverte\n'
+                          'immersive du patrimoine.',
+                          textAlign: TextAlign.center,
+                          style: AppFonts.dmSans(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                            height: 1.45,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                GlassSheetReveal(
+                  active: active,
+                  child: ClipPath(
+                    clipper: const _WaveTopClipper(),
+                    child: Container(
+                      width: double.infinity,
+                      color: AppColors.cream,
+                      padding: EdgeInsets.fromLTRB(20, 40, 20, 20 + bottom),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _ThemeFeatureIcon(
+                                kind: _ThemeIconKind.patrimoine,
+                                label: 'Patrimoine',
+                                delay: const Duration(milliseconds: 240),
+                                active: active,
+                                pulse: active,
+                              ),
+                              _ThemeFeatureIcon(
+                                kind: _ThemeIconKind.culture,
+                                label: 'Culture',
+                                delay: const Duration(milliseconds: 340),
+                                active: active,
+                                pulse: active,
+                              ),
+                              _ThemeFeatureIcon(
+                                kind: _ThemeIconKind.traditions,
+                                label: 'Traditions',
+                                delay: const Duration(milliseconds: 440),
+                                active: active,
+                                pulse: active,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          OnboardingDots(index: 2, onTap: onDotTap),
+                          const SizedBox(height: 14),
+                          PrimaryButton(
+                            label: 'Commencer',
+                            onPressed: onStart,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -796,28 +817,41 @@ class _ThemeFeatureIcon extends StatelessWidget {
   const _ThemeFeatureIcon({
     required this.kind,
     required this.label,
+    required this.active,
+    this.delay = Duration.zero,
+    this.pulse = false,
   });
 
   final _ThemeIconKind kind;
   final String label;
+  final bool active;
+  final Duration delay;
+  final bool pulse;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _GoldCircleGlyph(
-          child: CustomPaint(painter: _ThemeIconPainter(kind)),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: AppFonts.playfair(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: AppColors.navy,
+    return OnboardingEntrance(
+      active: active,
+      delay: delay,
+      offset: 18,
+      scaleFrom: 0.88,
+      child: Column(
+        children: [
+          AnimatedGoldGlyph(
+            pulse: pulse,
+            child: CustomPaint(painter: _ThemeIconPainter(kind)),
           ),
-        ),
-      ],
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: AppFonts.playfair(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.navy,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

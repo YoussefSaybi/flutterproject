@@ -6,6 +6,7 @@ import '../services/auth_service.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_fonts.dart';
 import '../utils/form_validators.dart';
+import '../widgets/auth_micro_interactions.dart';
 
 /// EcoAR Kerkennah — forgot password (email → code → new password).
 class EcoArForgotPasswordScreen extends StatefulWidget {
@@ -34,13 +35,6 @@ class _EcoArForgotPasswordScreenState extends State<EcoArForgotPasswordScreen> {
   bool _obscure = true;
   bool _obscureConfirm = true;
   int _passwordScore = 0;
-
-  static const _goldKnockout = ColorFilter.matrix(<double>[
-    1, 0, 0, 0, 0,
-    0, 1, 0, 0, 0,
-    0, 0, 1, 0, 0,
-    0.35, 0.35, 0.35, 0, 0,
-  ]);
 
   @override
   void initState() {
@@ -120,11 +114,12 @@ class _EcoArForgotPasswordScreenState extends State<EcoArForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
     final topInset = MediaQuery.paddingOf(context).top;
     final bottomInset = MediaQuery.paddingOf(context).bottom;
-    final heroH = size.height * 0.30;
-    final bottomPeek = size.height * 0.06;
+    const logoH = 88.0;
+    const logoTopPad = 32.0;
+    const logoBottomPad = 48.0;
+    final heroH = topInset + logoTopPad + logoH + logoBottomPad;
 
     return Scaffold(
       backgroundColor: const Color(0xFF3AABB8),
@@ -135,125 +130,96 @@ class _EcoArForgotPasswordScreenState extends State<EcoArForgotPasswordScreen> {
             child: Image.asset(
               AppAssets.bgForgotPassword,
               fit: BoxFit.cover,
+              alignment: Alignment.center,
               errorBuilder: (_, __, ___) => Image.asset(
-                AppAssets.bgLoginHero,
+                AppAssets.bgCoast,
                 fit: BoxFit.cover,
               ),
             ),
           ),
+          // Logo stays at top
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: heroH,
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: topInset + logoTopPad,
+                bottom: logoBottomPad,
+              ),
+              child: Center(
+                child: Image.asset(
+                  AppAssets.logoGold,
+                  height: logoH,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => Image.asset(
+                    AppAssets.logo,
+                    height: logoH,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Form card centered on screen
           Positioned.fill(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.only(bottom: bottomInset),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: heroH,
-                    width: double.infinity,
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          top: topInset + 4,
-                          left: 8,
-                          child: IconButton(
-                            onPressed: () {
-                              if (_step == 1) {
-                                setState(() {
-                                  _step = 0;
-                                  _submitted = false;
-                                });
-                              } else {
-                                _goLogin();
-                              }
-                            },
-                            icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                            color: Colors.white,
-                            style: IconButton.styleFrom(
-                              backgroundColor:
-                                  Colors.black.withValues(alpha: 0.25),
-                            ),
-                          ),
-                        ),
-                        Align(
-                          alignment: const Alignment(0, -0.15),
-                          child: Padding(
-                            padding: EdgeInsets.only(top: topInset + 8),
-                            child: ColorFiltered(
-                              colorFilter: _goldKnockout,
-                              child: Image.asset(
-                                AppAssets.logoGold,
-                                width: size.width * 0.62,
-                                fit: BoxFit.contain,
-                                errorBuilder: (_, __, ___) => Image.asset(
-                                  AppAssets.logo,
-                                  width: size.width * 0.62,
-                                  fit: BoxFit.contain,
+            child: Center(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(16, heroH, 16, 16 + bottomInset),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(28, 24, 28, 16),
+                  decoration: BoxDecoration(
+                    color: _cream,
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        blurRadius: 18,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 280),
+                    child: _step == 0
+                        ? _EmailStep(
+                            key: const ValueKey('email'),
+                            formKey: _emailFormKey,
+                            email: _email,
+                            submitted: _submitted,
+                            loading: _loading,
+                            onSubmit: _sendCode,
+                            onLogin: _goLogin,
+                          )
+                        : _step == 1
+                            ? _ResetStep(
+                                key: const ValueKey('reset'),
+                                formKey: _resetFormKey,
+                                email: _email.text.trim(),
+                                code: _code,
+                                password: _password,
+                                confirm: _confirm,
+                                submitted: _submitted,
+                                loading: _loading,
+                                obscure: _obscure,
+                                obscureConfirm: _obscureConfirm,
+                                passwordScore: _passwordScore,
+                                onToggleObscure: () =>
+                                    setState(() => _obscure = !_obscure),
+                                onToggleConfirm: () => setState(
+                                  () => _obscureConfirm = !_obscureConfirm,
                                 ),
+                                onSubmit: _resetPassword,
+                                onResend: _sendCode,
+                              )
+                            : _DoneStep(
+                                key: const ValueKey('done'),
+                                onLogin: _goLogin,
                               ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    constraints: BoxConstraints(
-                      minHeight: size.height - heroH - bottomPeek - 8,
-                    ),
-                    padding: const EdgeInsets.fromLTRB(28, 40, 28, 40),
-                    decoration: BoxDecoration(
-                      color: _cream,
-                      borderRadius: BorderRadius.circular(32),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.12),
-                          blurRadius: 18,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 280),
-                      child: _step == 0
-                          ? _EmailStep(
-                              key: const ValueKey('email'),
-                              formKey: _emailFormKey,
-                              email: _email,
-                              submitted: _submitted,
-                              loading: _loading,
-                              onSubmit: _sendCode,
-                              onLogin: _goLogin,
-                            )
-                          : _step == 1
-                              ? _ResetStep(
-                                  key: const ValueKey('reset'),
-                                  formKey: _resetFormKey,
-                                  email: _email.text.trim(),
-                                  code: _code,
-                                  password: _password,
-                                  confirm: _confirm,
-                                  submitted: _submitted,
-                                  loading: _loading,
-                                  obscure: _obscure,
-                                  obscureConfirm: _obscureConfirm,
-                                  passwordScore: _passwordScore,
-                                  onToggleObscure: () =>
-                                      setState(() => _obscure = !_obscure),
-                                  onToggleConfirm: () => setState(
-                                    () => _obscureConfirm = !_obscureConfirm,
-                                  ),
-                                  onSubmit: _resetPassword,
-                                  onResend: _sendCode,
-                                )
-                              : _DoneStep(
-                                  key: const ValueKey('done'),
-                                  onLogin: _goLogin,
-                                ),
-                    ),
-                  ),
-                  SizedBox(height: bottomPeek),
-                ],
+                ),
               ),
             ),
           ),
@@ -291,6 +257,7 @@ class _EmailStep extends StatelessWidget {
           ? AutovalidateMode.onUserInteraction
           : AutovalidateMode.disabled,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
@@ -331,17 +298,9 @@ class _EmailStep extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Center(
-            child: GestureDetector(
+            child: AuthTextLink(
+              label: 'Retour à la connexion',
               onTap: onLogin,
-              child: Text(
-                'Retour à la connexion',
-                style: AppFonts.dmSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: _navy,
-                  decoration: TextDecoration.underline,
-                ),
-              ),
             ),
           ),
         ],
@@ -394,6 +353,7 @@ class _ResetStep extends StatelessWidget {
           ? AutovalidateMode.onUserInteraction
           : AutovalidateMode.disabled,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
@@ -444,15 +404,11 @@ class _ResetStep extends StatelessWidget {
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.newPassword],
             validator: FormValidators.password,
-            suffix: IconButton(
+            suffix: AuthBounceIconButton(
               onPressed: onToggleObscure,
-              icon: Icon(
-                obscure
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
-                color: _navy.withValues(alpha: 0.45),
-                size: 22,
-              ),
+              icon: obscure
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
             ),
           ),
           if (password.text.isNotEmpty) ...[
@@ -469,15 +425,11 @@ class _ResetStep extends StatelessWidget {
             onFieldSubmitted: (_) => onSubmit(),
             validator: (v) =>
                 FormValidators.confirmPassword(v, password.text),
-            suffix: IconButton(
+            suffix: AuthBounceIconButton(
               onPressed: onToggleConfirm,
-              icon: Icon(
-                obscureConfirm
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
-                color: _navy.withValues(alpha: 0.45),
-                size: 22,
-              ),
+              icon: obscureConfirm
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
             ),
           ),
           const SizedBox(height: 22),
@@ -488,16 +440,11 @@ class _ResetStep extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Center(
-            child: TextButton(
-              onPressed: loading ? null : onResend,
-              child: Text(
-                'Renvoyer le code',
-                style: AppFonts.dmSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: _navy,
-                  decoration: TextDecoration.underline,
-                ),
+            child: Opacity(
+              opacity: loading ? 0.45 : 1,
+              child: AuthTextLink(
+                label: 'Renvoyer le code',
+                onTap: loading ? () {} : onResend,
               ),
             ),
           ),
@@ -517,10 +464,22 @@ class _DoneStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: 8),
-        Icon(Icons.check_circle_rounded, size: 64, color: _navy),
+        TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0.55, end: 1),
+          duration: const Duration(milliseconds: 650),
+          curve: Curves.elasticOut,
+          builder: (_, scale, child) =>
+              Transform.scale(scale: scale, child: child),
+          child: const Icon(
+            Icons.check_circle_rounded,
+            size: 64,
+            color: _navy,
+          ),
+        ),
         const SizedBox(height: 18),
         Text(
           'Mot de passe mis à jour',
@@ -563,51 +522,17 @@ class _PrimaryButton extends StatelessWidget {
   final bool loading;
   final VoidCallback? onPressed;
 
-  static const _navy = Color(0xFF1B4A5A);
-
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 54,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _navy,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: _navy.withValues(alpha: 0.4),
-          elevation: 0,
-          shape: const StadiumBorder(),
-        ),
-        child: loading
-            ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.2,
-                  color: Colors.white,
-                ),
-              )
-            : Row(
-                children: [
-                  const Spacer(),
-                  Text(
-                    label,
-                    style: AppFonts.dmSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const Spacer(),
-                  const Icon(Icons.chevron_right, size: 22),
-                ],
-              ),
-      ),
+    return AuthPrimaryButton(
+      label: label,
+      loading: loading,
+      onPressed: onPressed,
     );
   }
 }
 
-class _PillField extends StatelessWidget {
+class _PillField extends StatefulWidget {
   const _PillField({
     required this.controller,
     required this.hint,
@@ -634,54 +559,97 @@ class _PillField extends StatelessWidget {
   final Iterable<String>? autofillHints;
   final List<TextInputFormatter>? inputFormatters;
 
+  @override
+  State<_PillField> createState() => _PillFieldState();
+}
+
+class _PillFieldState extends State<_PillField> {
   static const _navy = Color(0xFF1B4A5A);
   static const _border = Color(0xFFD8E3E8);
 
+  late final FocusNode _focus = FocusNode();
+  bool _focused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(() {
+      final next = _focus.hasFocus;
+      if (next != _focused) setState(() => _focused = next);
+    });
+  }
+
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      textInputAction: textInputAction,
-      autofillHints: autofillHints,
-      inputFormatters: inputFormatters,
-      validator: validator,
-      onFieldSubmitted: onFieldSubmitted,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      style: AppFonts.dmSans(fontSize: 15, color: _navy),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: AppFonts.dmSans(
-          fontSize: 14,
-          color: const Color(0xFF9AA8AE),
-        ),
-        prefixIcon: Icon(prefix, color: _navy.withValues(alpha: 0.5), size: 22),
-        suffixIcon: suffix,
-        filled: true,
-        fillColor: Colors.white,
-        errorMaxLines: 2,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: _border),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: _border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: _navy, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Color(0xFF8B2E2E)),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Color(0xFF8B2E2E), width: 1.4),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: _focused
+            ? [
+                BoxShadow(
+                  color: _navy.withValues(alpha: 0.12),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : const [],
+      ),
+      child: TextFormField(
+        controller: widget.controller,
+        focusNode: _focus,
+        obscureText: widget.obscureText,
+        keyboardType: widget.keyboardType,
+        textInputAction: widget.textInputAction,
+        autofillHints: widget.autofillHints,
+        inputFormatters: widget.inputFormatters,
+        validator: widget.validator,
+        onFieldSubmitted: widget.onFieldSubmitted,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        style: AppFonts.dmSans(fontSize: 15, color: _navy),
+        decoration: InputDecoration(
+          hintText: widget.hint,
+          hintStyle: AppFonts.dmSans(
+            fontSize: 14,
+            color: const Color(0xFF9AA8AE),
+          ),
+          prefixIcon: AuthAnimatedIcon(
+            icon: widget.prefix,
+            focused: _focused,
+          ),
+          suffixIcon: widget.suffix,
+          filled: true,
+          fillColor: Colors.white,
+          errorMaxLines: 2,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: _border),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: _border),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: _navy, width: 1.6),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: Color(0xFF8B2E2E)),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: Color(0xFF8B2E2E), width: 1.4),
+          ),
         ),
       ),
     );
@@ -709,7 +677,9 @@ class _StrengthBar extends StatelessWidget {
         Row(
           children: List.generate(4, (i) {
             return Expanded(
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeOutCubic,
                 height: 4,
                 margin: EdgeInsets.only(right: i < 3 ? 4 : 0),
                 decoration: BoxDecoration(
@@ -721,9 +691,12 @@ class _StrengthBar extends StatelessWidget {
           }),
         ),
         const SizedBox(height: 6),
-        Text(
-          'Sécurité : ${FormValidators.passwordStrengthLabel(score)}',
+        AnimatedDefaultTextStyle(
+          duration: const Duration(milliseconds: 280),
           style: AppFonts.dmSans(fontSize: 11, color: color),
+          child: Text(
+            'Sécurité : ${FormValidators.passwordStrengthLabel(score)}',
+          ),
         ),
       ],
     );

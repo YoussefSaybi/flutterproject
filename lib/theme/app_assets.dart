@@ -3,7 +3,7 @@ class AppAssets {
   // Logos (shared everywhere — splash, headers, about)
   static const logo = 'assets/logos/EcoAR_Kerkennah_Logo_4K.png';
   static const logoAlt = 'assets/logos/logo.png';
-  static const logoGold = 'assets/logos/EcoAR_Kerkennah_Logo_gold.jpg';
+  static const logoGold = 'assets/logos/EcoAR_Kerkennah_Logo_gold.png';
   static const logoMelies = 'assets/logos/melies_logo_gold.png';
 
   // Institutional partners + studio (credits screen — original colors)
@@ -30,8 +30,8 @@ class AppAssets {
   static const bgLoginHero = 'assets/bg/login_hero.jpg';
   /// Signup hero — single full-bleed coastal scene (no user photo stack).
   static const bgSignupHero = 'assets/images/bg_signup_hero.jpg';
-  /// Forgot password — soft dusk lagoon coastal scene.
-  static const bgForgotPassword = 'assets/images/bg_forgot_password.jpg';
+  /// Forgot password — dedicated coastal hero.
+  static const bgForgotPassword = 'assets/bg/forgot_password_hero.jpg';
   /// Splash / loading alternate full-screen ocean.
   static const bgOceanFull = 'assets/images/bg_ocean_full.jpg';
   static const bgKerkennahHero = bgSignupHero;
@@ -65,7 +65,7 @@ class AppAssets {
   static const discoveryCard = bgVillage;
   static const listItem = bgCoast;
   static const scannerFrame = iconScanner;
-  static const socialGoogle = iconHome;
+  static const socialGoogle = 'assets/icons/google_g.png';
   static const socialApple = iconHome;
   static const passwordField = iconHome;
   static const nameField = iconHome;

@@ -102,13 +102,68 @@ class PackIcon extends StatelessWidget {
   }
 }
 
-/// Primary pill CTA — label + chevron in circle (CEO spec).
-class PrimaryButton extends StatelessWidget {
+/// Soft rounded white chevron — thin stroke, matches CTA fleche reference.
+class SoftChevronIcon extends StatelessWidget {
+  const SoftChevronIcon({
+    super.key,
+    this.size = 18,
+    this.color = Colors.white,
+  });
+
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _SoftChevronPainter(color: color),
+      ),
+    );
+  }
+}
+
+class _SoftChevronPainter extends CustomPainter {
+  const _SoftChevronPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.shortestSide;
+    // Thin stroke like the reference fleche
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = (s * 0.095).clamp(1.6, 2.2)
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..isAntiAlias = true;
+
+    // Classic > shape — open ~90°, not too wide
+    final path = Path()
+      ..moveTo(s * 0.36, s * 0.22)
+      ..lineTo(s * 0.64, s * 0.50)
+      ..lineTo(s * 0.36, s * 0.78);
+
+    canvas.drawPath(path, stroke);
+  }
+
+  @override
+  bool shouldRepaint(covariant _SoftChevronPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+/// Primary pill CTA — centered label + thin fleche on the right (CEO reference).
+/// Press: soft shrink + fleche slides. Idle: gentle fleche nudge.
+class PrimaryButton extends StatefulWidget {
   const PrimaryButton({
     super.key,
     required this.label,
     required this.onPressed,
-    this.icon = Icons.arrow_forward_rounded,
+    this.icon = Icons.chevron_right_rounded,
     this.backgroundColor = AppColors.navy,
     this.foregroundColor = AppColors.white,
     this.expand = true,
@@ -126,57 +181,127 @@ class PrimaryButton extends StatelessWidget {
   final bool showTrailing;
 
   @override
+  State<PrimaryButton> createState() => _PrimaryButtonState();
+}
+
+class _PrimaryButtonState extends State<PrimaryButton>
+    with TickerProviderStateMixin {
+  late final AnimationController _press = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 90),
+    reverseDuration: const Duration(milliseconds: 320),
+  );
+  late final Animation<double> _scale = Tween<double>(begin: 1, end: 0.96)
+      .animate(CurvedAnimation(
+    parent: _press,
+    curve: Curves.easeOutCubic,
+    reverseCurve: Curves.easeOutBack,
+  ));
+  late final AnimationController _idle = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1200),
+  )..repeat(reverse: true);
+  late final Animation<double> _idleSlide = Tween<double>(begin: 0, end: 4)
+      .animate(CurvedAnimation(parent: _idle, curve: Curves.easeInOut));
+  late final Animation<double> _pressSlide = Tween<double>(begin: 0, end: 3)
+      .animate(CurvedAnimation(parent: _press, curve: Curves.easeOutCubic));
+
+  @override
+  void dispose() {
+    _press.dispose();
+    _idle.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Keep multi-word labels on one line (e.g. "Se connecter").
-    final singleLineLabel = label.replaceAll(' ', '\u00A0');
-    final trailing = showTrailing && icon != null
-        ? Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: foregroundColor.withValues(alpha: 0.18),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, size: 16, color: foregroundColor),
-          )
-        : const SizedBox(width: 32, height: 32);
+    final singleLineLabel = widget.label.replaceAll(' ', '\u00A0');
+    final useSoftChevron = widget.showTrailing &&
+        (widget.icon == null ||
+            widget.icon == Icons.chevron_right_rounded ||
+            widget.icon == Icons.arrow_forward_rounded);
 
-    final child = Material(
-      color: enabled
-          ? backgroundColor
-          : backgroundColor.withValues(alpha: 0.4),
-      borderRadius: BorderRadius.circular(AppLayout.radiusPill),
-      child: InkWell(
-        onTap: enabled ? onPressed : null,
-        borderRadius: BorderRadius.circular(AppLayout.radiusPill),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(10, 14, 10, 14),
-          child: Row(
-            children: [
-              const SizedBox(width: 32),
-              Expanded(
-                child: Text(
-                  singleLineLabel,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  softWrap: false,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppFonts.dmSans(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                    color: foregroundColor,
-                    height: 1.2,
-                  ),
-                ),
+    final fleche = !widget.showTrailing
+        ? const SizedBox.shrink()
+        : AnimatedBuilder(
+            animation: Listenable.merge([_idle, _press]),
+            builder: (_, __) => Transform.translate(
+              offset: Offset(_idleSlide.value + _pressSlide.value, 0),
+              child: useSoftChevron
+                  ? SoftChevronIcon(
+                      size: 18,
+                      color: widget.foregroundColor,
+                    )
+                  : Icon(
+                      widget.icon,
+                      size: 18,
+                      color: widget.foregroundColor,
+                    ),
+            ),
+          );
+
+    // Stack keeps label optically centered; fleche sits on the right edge.
+    final content = SizedBox(
+      height: 52,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              singleLineLabel,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              softWrap: false,
+              overflow: TextOverflow.ellipsis,
+              style: AppFonts.dmSans(
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+                color: widget.foregroundColor,
+                height: 1.2,
               ),
-              trailing,
-            ],
+            ),
           ),
+          if (widget.showTrailing)
+            Positioned(
+              right: 18,
+              child: fleche,
+            ),
+        ],
+      ),
+    );
+
+    final child = AnimatedBuilder(
+      animation: _scale,
+      builder: (context, child) =>
+          Transform.scale(scale: _scale.value, child: child),
+      child: Material(
+        color: widget.enabled
+            ? widget.backgroundColor
+            : widget.backgroundColor.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(AppLayout.radiusPill),
+        child: InkWell(
+          onTap: widget.enabled ? widget.onPressed : null,
+          onHighlightChanged: (v) {
+            if (!widget.enabled) return;
+            if (v) {
+              _press.forward();
+            } else {
+              _press.reverse();
+            }
+          },
+          borderRadius: BorderRadius.circular(AppLayout.radiusPill),
+          splashColor: widget.foregroundColor.withValues(alpha: 0.14),
+          highlightColor: widget.foregroundColor.withValues(alpha: 0.08),
+          child: content,
         ),
       ),
     );
 
-    return expand ? SizedBox(width: double.infinity, child: child) : child;
+    return widget.expand
+        ? SizedBox(width: double.infinity, child: child)
+        : child;
   }
 }
 

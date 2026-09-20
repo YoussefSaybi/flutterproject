@@ -7,6 +7,7 @@ import '../services/auth_service.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_fonts.dart';
 import '../utils/form_validators.dart';
+import '../widgets/auth_micro_interactions.dart';
 
 /// EcoAR Kerkennah login — hero photo + overlapping cream form card.
 class EcoArLoginScreen extends StatefulWidget {
@@ -26,13 +27,6 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
   bool _obscure = true;
   bool _loading = false;
   bool _submitted = false;
-
-  static const _goldKnockout = ColorFilter.matrix(<double>[
-    1, 0, 0, 0, 0,
-    0, 1, 0, 0, 0,
-    0, 0, 1, 0, 0,
-    0.35, 0.35, 0.35, 0, 0,
-  ]);
 
   @override
   void dispose() {
@@ -95,11 +89,13 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
     final topInset = MediaQuery.paddingOf(context).top;
     final bottomInset = MediaQuery.paddingOf(context).bottom;
-    final heroH = size.height * 0.34;
-    final bottomPeek = size.height * 0.06;
+    const logoH = 96.0;
+    const logoTopPad = 48.0;
+    const logoBottomPad = 64.0;
+    final heroH = topInset + logoTopPad + logoH + logoBottomPad;
+    const bottomPeek = 12.0;
 
     return Scaffold(
       backgroundColor: const Color(0xFF3AABB8),
@@ -126,20 +122,19 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
                     height: heroH,
                     width: double.infinity,
                     child: Padding(
-                      padding: EdgeInsets.only(top: topInset + 8),
-                      child: Align(
-                        alignment: const Alignment(0, -0.2),
-                        child: ColorFiltered(
-                          colorFilter: _goldKnockout,
-                          child: Image.asset(
-                            AppAssets.logoGold,
-                            width: size.width * 0.72,
+                      padding: EdgeInsets.only(
+                        top: topInset + logoTopPad,
+                        bottom: logoBottomPad,
+                      ),
+                      child: Center(
+                        child: Image.asset(
+                          AppAssets.logoGold,
+                          height: logoH,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => Image.asset(
+                            AppAssets.logo,
+                            height: logoH,
                             fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => Image.asset(
-                              AppAssets.logo,
-                              width: size.width * 0.72,
-                              fit: BoxFit.contain,
-                            ),
                           ),
                         ),
                       ),
@@ -149,10 +144,7 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
                   Container(
                     width: double.infinity,
                     margin: const EdgeInsets.symmetric(horizontal: 16),
-                    constraints: BoxConstraints(
-                      minHeight: size.height - heroH - bottomPeek - 8,
-                    ),
-                    padding: const EdgeInsets.fromLTRB(28, 48, 28, 44),
+                    padding: const EdgeInsets.fromLTRB(28, 24, 28, 16),
                     decoration: BoxDecoration(
                       color: _cream,
                       borderRadius: BorderRadius.circular(32),
@@ -170,6 +162,7 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
                           ? AutovalidateMode.onUserInteraction
                           : AutovalidateMode.disabled,
                       child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
@@ -216,83 +209,30 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
                           autofillHints: const [AutofillHints.password],
                           onFieldSubmitted: (_) => _onLogin(),
                           validator: FormValidators.loginPassword,
-                          suffix: IconButton(
+                          suffix: AuthBounceIconButton(
                             tooltip: _obscure
                                 ? 'Afficher le mot de passe'
                                 : 'Masquer le mot de passe',
                             onPressed: () =>
                                 setState(() => _obscure = !_obscure),
-                            icon: Icon(
-                              _obscure
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined,
-                              color: _navy.withValues(alpha: 0.45),
-                              size: 22,
-                            ),
+                            icon: _obscure
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Align(
                           alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: _onForgotPassword,
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: Text(
-                              'Mot de passe oublié ?',
-                              style: AppFonts.dmSans(
-                                fontSize: 13,
-                                color: _navy,
-                                decoration: TextDecoration.underline,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                          child: AuthTextLink(
+                            label: 'Mot de passe oublié ?',
+                            onTap: _onForgotPassword,
                           ),
                         ),
                         const SizedBox(height: 22),
-                        SizedBox(
-                          height: 54,
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _loading ? null : _onLogin,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _navy,
-                              foregroundColor: Colors.white,
-                              disabledBackgroundColor:
-                                  _navy.withValues(alpha: 0.45),
-                              elevation: 0,
-                              shape: const StadiumBorder(),
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 22),
-                            ),
-                            child: _loading
-                                ? const SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : Row(
-                                    children: [
-                                      const Spacer(),
-                                      Text(
-                                        'Se connecter',
-                                        style: AppFonts.dmSans(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const Spacer(),
-                                      const Icon(Icons.chevron_right, size: 22),
-                                    ],
-                                  ),
-                          ),
+                        AuthPrimaryButton(
+                          label: 'Se connecter',
+                          loading: _loading,
+                          onPressed: _loading ? null : _onLogin,
                         ),
                         const SizedBox(height: 28),
                         Row(
@@ -321,13 +261,13 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        _SocialPill(
+                        AuthSocialButton(
                           label: 'Continuer avec Google',
                           onPressed: _loading ? null : _onGoogle,
                           leading: const _GoogleMark(),
                         ),
                         const SizedBox(height: 10),
-                        _SocialPill(
+                        AuthSocialButton(
                           label: 'Continuer avec Apple',
                           onPressed: _loading ? null : _onApple,
                           leading: const Icon(
@@ -348,22 +288,14 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
                                   color: _navy.withValues(alpha: 0.7),
                                 ),
                               ),
-                              GestureDetector(
+                              AuthTextLink(
+                                label: "S'inscrire",
                                 onTap: _onSignUp,
-                                child: Text(
-                                  "S'inscrire",
-                                  style: AppFonts.dmSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: _navy,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 4),
                       ],
                     ),
                     ),
@@ -379,7 +311,7 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
   }
 }
 
-class _PillField extends StatelessWidget {
+class _PillField extends StatefulWidget {
   const _PillField({
     required this.controller,
     required this.hint,
@@ -404,149 +336,116 @@ class _PillField extends StatelessWidget {
   final void Function(String)? onFieldSubmitted;
   final Iterable<String>? autofillHints;
 
+  @override
+  State<_PillField> createState() => _PillFieldState();
+}
+
+class _PillFieldState extends State<_PillField> {
   static const _navy = Color(0xFF1B4A5A);
   static const _border = Color(0xFFD8E3E8);
 
+  late final FocusNode _focus = FocusNode();
+  bool _focused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(() {
+      final next = _focus.hasFocus;
+      if (next != _focused) setState(() => _focused = next);
+    });
+  }
+
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      textInputAction: textInputAction,
-      autofillHints: autofillHints,
-      validator: validator,
-      onFieldSubmitted: onFieldSubmitted,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      style: AppFonts.dmSans(fontSize: 15, color: _navy),
-      inputFormatters: [
-        FilteringTextInputFormatter.deny(RegExp(r'[\n\r]')),
-      ],
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: AppFonts.dmSans(
-          fontSize: 14,
-          color: const Color(0xFF9AA8AE),
-        ),
-        prefixIcon: Icon(prefix, color: _navy.withValues(alpha: 0.5), size: 22),
-        suffixIcon: suffix,
-        filled: true,
-        fillColor: Colors.white,
-        errorMaxLines: 2,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: _border),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: _border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: _navy, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Color(0xFF8B2E2E)),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Color(0xFF8B2E2E), width: 1.4),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: _focused
+            ? [
+                BoxShadow(
+                  color: _navy.withValues(alpha: 0.12),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : const [],
+      ),
+      child: TextFormField(
+        controller: widget.controller,
+        focusNode: _focus,
+        obscureText: widget.obscureText,
+        keyboardType: widget.keyboardType,
+        textInputAction: widget.textInputAction,
+        autofillHints: widget.autofillHints,
+        validator: widget.validator,
+        onFieldSubmitted: widget.onFieldSubmitted,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        style: AppFonts.dmSans(fontSize: 15, color: _navy),
+        inputFormatters: [
+          FilteringTextInputFormatter.deny(RegExp(r'[\n\r]')),
+        ],
+        decoration: InputDecoration(
+          hintText: widget.hint,
+          hintStyle: AppFonts.dmSans(
+            fontSize: 14,
+            color: const Color(0xFF9AA8AE),
+          ),
+          prefixIcon: AuthAnimatedIcon(
+            icon: widget.prefix,
+            focused: _focused,
+          ),
+          suffixIcon: widget.suffix,
+          filled: true,
+          fillColor: Colors.white,
+          errorMaxLines: 2,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: _border),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: _border),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: _navy, width: 1.6),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: Color(0xFF8B2E2E)),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: Color(0xFF8B2E2E), width: 1.4),
+          ),
         ),
       ),
     );
   }
 }
 
-class _SocialPill extends StatelessWidget {
-  const _SocialPill({
-    required this.label,
-    required this.leading,
-    required this.onPressed,
-  });
-
-  final String label;
-  final Widget leading;
-  final VoidCallback? onPressed;
-
-  static const _navy = Color(0xFF1B4A5A);
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 52,
-      width: double.infinity,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: _navy,
-          side: BorderSide(color: _navy.withValues(alpha: 0.14)),
-          shape: const StadiumBorder(),
-          padding: const EdgeInsets.symmetric(horizontal: 18),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            leading,
-            const SizedBox(width: 10),
-            Text(
-              label,
-              style: AppFonts.dmSans(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: _navy,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Simple Google "G" mark without an extra asset dependency.
+/// Official Google "G" mark for the social login pill.
 class _GoogleMark extends StatelessWidget {
   const _GoogleMark();
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 20,
-      height: 20,
-      child: CustomPaint(painter: _GoogleGPainter()),
+    return Image.asset(
+      AppAssets.socialGoogle,
+      width: 26,
+      height: 26,
+      fit: BoxFit.contain,
     );
   }
-}
-
-class _GoogleGPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2
-      ..strokeCap = StrokeCap.round;
-    final rect = Offset.zero & size;
-    final sweep = [
-      (const Color(0xFF4285F4), 0.0, 1.6),
-      (const Color(0xFF34A853), 1.6, 0.9),
-      (const Color(0xFFFBBC05), 2.5, 0.7),
-      (const Color(0xFFEA4335), 3.2, 0.9),
-    ];
-    for (final (c, start, span) in sweep) {
-      paint.color = c;
-      canvas.drawArc(rect.deflate(1.5), start, span, false, paint);
-    }
-    paint
-      ..style = PaintingStyle.fill
-      ..color = const Color(0xFF4285F4);
-    canvas.drawRect(
-      Rect.fromLTWH(size.width * 0.48, size.height * 0.42, size.width * 0.42, 2.4),
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

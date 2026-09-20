@@ -7,6 +7,7 @@ import '../services/auth_service.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_fonts.dart';
 import '../utils/form_validators.dart';
+import '../widgets/auth_micro_interactions.dart';
 
 /// EcoAR Kerkennah sign-up — coastal hero + cream form card (mock layout).
 class EcoArSignUpScreen extends StatefulWidget {
@@ -35,14 +36,6 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
 
   late final TapGestureRecognizer _termsTap;
   late final TapGestureRecognizer _privacyTap;
-
-  /// Knock out black plate so only gold shows on the photo.
-  static const _goldKnockout = ColorFilter.matrix(<double>[
-    1, 0, 0, 0, 0,
-    0, 1, 0, 0, 0,
-    0, 0, 1, 0, 0,
-    0.35, 0.35, 0.35, 0, 0,
-  ]);
 
   @override
   void initState() {
@@ -130,11 +123,13 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
     final topInset = MediaQuery.paddingOf(context).top;
     final bottomInset = MediaQuery.paddingOf(context).bottom;
-    final heroH = size.height * 0.34;
-    final bottomPeek = size.height * 0.06;
+    const logoH = 88.0;
+    const logoTopPad = 32.0;
+    const logoBottomPad = 64.0;
+    final heroH = topInset + logoTopPad + logoH + logoBottomPad;
+    const bottomPeek = 12.0;
     final canSubmit = _acceptedTerms && !_loading;
 
     return Scaffold(
@@ -158,25 +153,23 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
               padding: EdgeInsets.only(bottom: bottomInset),
               child: Column(
                 children: [
-                  // Top zone: official gold EcoAR logo on coastal sky
                   SizedBox(
                     height: heroH,
                     width: double.infinity,
                     child: Padding(
-                      padding: EdgeInsets.only(top: topInset + 8),
-                      child: Align(
-                        alignment: const Alignment(0, -0.2),
-                        child: ColorFiltered(
-                          colorFilter: _goldKnockout,
-                          child: Image.asset(
-                            AppAssets.logoGold,
-                            width: size.width * 0.72,
+                      padding: EdgeInsets.only(
+                        top: topInset + logoTopPad,
+                        bottom: logoBottomPad,
+                      ),
+                      child: Center(
+                        child: Image.asset(
+                          AppAssets.logoGold,
+                          height: logoH,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => Image.asset(
+                            AppAssets.logo,
+                            height: logoH,
                             fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => Image.asset(
-                              AppAssets.logo,
-                              width: size.width * 0.72,
-                              fit: BoxFit.contain,
-                            ),
                           ),
                         ),
                       ),
@@ -186,10 +179,7 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                   Container(
                       width: double.infinity,
                       margin: const EdgeInsets.symmetric(horizontal: 16),
-                      constraints: BoxConstraints(
-                        minHeight: size.height - heroH - bottomPeek - 8,
-                      ),
-                      padding: const EdgeInsets.fromLTRB(28, 48, 28, 44),
+                      padding: const EdgeInsets.fromLTRB(28, 48, 28, 16),
                       decoration: BoxDecoration(
                         color: _cream,
                         borderRadius: BorderRadius.circular(32),
@@ -207,6 +197,7 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                             ? AutovalidateMode.onUserInteraction
                             : AutovalidateMode.disabled,
                         child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(
@@ -257,7 +248,7 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                               obscureText: !_isPasswordVisible,
                               textInputAction: TextInputAction.next,
                               autofillHints: const [AutofillHints.newPassword],
-                              suffix: IconButton(
+                              suffix: AuthBounceIconButton(
                                 tooltip: _isPasswordVisible
                                     ? 'Masquer le mot de passe'
                                     : 'Afficher le mot de passe',
@@ -265,13 +256,9 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                                   () =>
                                       _isPasswordVisible = !_isPasswordVisible,
                                 ),
-                                icon: Icon(
-                                  _isPasswordVisible
-                                      ? Icons.visibility_off_outlined
-                                      : Icons.visibility_outlined,
-                                  color: _navy.withValues(alpha: 0.45),
-                                  size: 22,
-                                ),
+                                icon: _isPasswordVisible
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
                               ),
                               validator: FormValidators.password,
                             ),
@@ -290,7 +277,7 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                               onFieldSubmitted: (_) {
                                 if (canSubmit) _onSignUp();
                               },
-                              suffix: IconButton(
+                              suffix: AuthBounceIconButton(
                                 tooltip: _isConfirmPasswordVisible
                                     ? 'Masquer le mot de passe'
                                     : 'Afficher le mot de passe',
@@ -298,13 +285,9 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                                   () => _isConfirmPasswordVisible =
                                       !_isConfirmPasswordVisible,
                                 ),
-                                icon: Icon(
-                                  _isConfirmPasswordVisible
-                                      ? Icons.visibility_off_outlined
-                                      : Icons.visibility_outlined,
-                                  color: _navy.withValues(alpha: 0.45),
-                                  size: 22,
-                                ),
+                                icon: _isConfirmPasswordVisible
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
                               ),
                               validator: (v) => FormValidators.confirmPassword(
                                 v,
@@ -316,25 +299,13 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: Checkbox(
+                                  width: 28,
+                                  height: 28,
+                                  child: AuthAnimatedCheckbox(
                                     value: _acceptedTerms,
                                     onChanged: (v) => setState(
                                       () => _acceptedTerms = v ?? false,
                                     ),
-                                    activeColor: _navy,
-                                    checkColor: Colors.white,
-                                    side: BorderSide(
-                                      color: _navy.withValues(alpha: 0.5),
-                                      width: 1.5,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    visualDensity: VisualDensity.compact,
                                   ),
                                 ),
                                 const SizedBox(width: 10),
@@ -379,51 +350,10 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                               ],
                             ),
                             const SizedBox(height: 22),
-                            SizedBox(
-                              height: 54,
-                              child: ElevatedButton(
-                                onPressed: canSubmit ? _onSignUp : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: _navy,
-                                  foregroundColor: Colors.white,
-                                  disabledBackgroundColor:
-                                      _navy.withValues(alpha: 0.35),
-                                  disabledForegroundColor:
-                                      Colors.white.withValues(alpha: 0.75),
-                                  elevation: 0,
-                                  shape: const StadiumBorder(),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 22,
-                                  ),
-                                ),
-                                child: _loading
-                                    ? const SizedBox(
-                                        width: 22,
-                                        height: 22,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Row(
-                                        children: [
-                                          const Spacer(),
-                                          Text(
-                                            "S'inscrire",
-                                            style: AppFonts.dmSans(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          const Spacer(),
-                                          const Icon(
-                                            Icons.chevron_right,
-                                            size: 22,
-                                          ),
-                                        ],
-                                      ),
-                              ),
+                            AuthPrimaryButton(
+                              label: "S'inscrire",
+                              loading: _loading,
+                              onPressed: canSubmit ? _onSignUp : null,
                             ),
                             const SizedBox(height: 28),
                             Row(
@@ -464,22 +394,14 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                                       color: _navy.withValues(alpha: 0.7),
                                     ),
                                   ),
-                                  GestureDetector(
+                                  AuthTextLink(
+                                    label: 'Se connecter',
                                     onTap: _onLoginLink,
-                                    child: Text(
-                                      'Se connecter',
-                                      style: AppFonts.dmSans(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                        color: _navy,
-                                        decoration: TextDecoration.underline,
-                                      ),
-                                    ),
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 4),
                           ],
                         ),
                       ),
@@ -495,7 +417,7 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
   }
 }
 
-class _PillFormField extends StatelessWidget {
+class _PillFormField extends StatefulWidget {
   const _PillFormField({
     required this.controller,
     required this.hint,
@@ -522,54 +444,97 @@ class _PillFormField extends StatelessWidget {
   final Iterable<String>? autofillHints;
   final TextCapitalization textCapitalization;
 
+  @override
+  State<_PillFormField> createState() => _PillFormFieldState();
+}
+
+class _PillFormFieldState extends State<_PillFormField> {
   static const _navy = Color(0xFF1B4A5A);
   static const _border = Color(0xFFD8E3E8);
 
+  late final FocusNode _focus = FocusNode();
+  bool _focused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(() {
+      final next = _focus.hasFocus;
+      if (next != _focused) setState(() => _focused = next);
+    });
+  }
+
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      textInputAction: textInputAction,
-      textCapitalization: textCapitalization,
-      autofillHints: autofillHints,
-      validator: validator,
-      onFieldSubmitted: onFieldSubmitted,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      style: AppFonts.dmSans(fontSize: 15, color: _navy),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: AppFonts.dmSans(
-          fontSize: 14,
-          color: const Color(0xFF9AA8AE),
-        ),
-        prefixIcon: Icon(prefix, color: _navy.withValues(alpha: 0.5), size: 22),
-        suffixIcon: suffix,
-        filled: true,
-        fillColor: Colors.white,
-        errorMaxLines: 2,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: _border),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: _border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: _navy, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Color(0xFF8B2E2E)),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Color(0xFF8B2E2E), width: 1.4),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: _focused
+            ? [
+                BoxShadow(
+                  color: _navy.withValues(alpha: 0.12),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : const [],
+      ),
+      child: TextFormField(
+        controller: widget.controller,
+        focusNode: _focus,
+        obscureText: widget.obscureText,
+        keyboardType: widget.keyboardType,
+        textInputAction: widget.textInputAction,
+        textCapitalization: widget.textCapitalization,
+        autofillHints: widget.autofillHints,
+        validator: widget.validator,
+        onFieldSubmitted: widget.onFieldSubmitted,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        style: AppFonts.dmSans(fontSize: 15, color: _navy),
+        decoration: InputDecoration(
+          hintText: widget.hint,
+          hintStyle: AppFonts.dmSans(
+            fontSize: 14,
+            color: const Color(0xFF9AA8AE),
+          ),
+          prefixIcon: AuthAnimatedIcon(
+            icon: widget.prefix,
+            focused: _focused,
+          ),
+          suffixIcon: widget.suffix,
+          filled: true,
+          fillColor: Colors.white,
+          errorMaxLines: 2,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: _border),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: _border),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: _navy, width: 1.6),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: Color(0xFF8B2E2E)),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: Color(0xFF8B2E2E), width: 1.4),
+          ),
         ),
       ),
     );
@@ -598,7 +563,9 @@ class _PasswordStrengthBar extends StatelessWidget {
           children: List.generate(4, (i) {
             final filled = i < score;
             return Expanded(
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeOutCubic,
                 height: 4,
                 margin: EdgeInsets.only(right: i < 3 ? 4 : 0),
                 decoration: BoxDecoration(
@@ -610,13 +577,16 @@ class _PasswordStrengthBar extends StatelessWidget {
           }),
         ),
         const SizedBox(height: 6),
-        Text(
-          'Sécurité : ${FormValidators.passwordStrengthLabel(score)}'
-          ' — 8+ car., majuscule, minuscule, chiffre, symbole',
+        AnimatedDefaultTextStyle(
+          duration: const Duration(milliseconds: 280),
           style: AppFonts.dmSans(
             fontSize: 11,
             color: color,
             height: 1.3,
+          ),
+          child: Text(
+            'Sécurité : ${FormValidators.passwordStrengthLabel(score)}'
+            ' — 8+ car., majuscule, minuscule, chiffre, symbole',
           ),
         ),
       ],
