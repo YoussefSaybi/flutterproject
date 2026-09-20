@@ -15,9 +15,22 @@ class AppNav {
   static void openParcoursDetail(BuildContext context) =>
       context.push(parcoursDetail);
 
+  /// Start the featured circuit: open its fiche, or first étape if already there.
+  static void startParcours(BuildContext context, {String? id}) {
+    final target = id ?? parcoursId;
+    final path = GoRouterState.of(context).uri.path;
+    if (path == '/parcours/$target' || path.startsWith('/parcours/')) {
+      context.push('/ar');
+      return;
+    }
+    context.push('/parcours/$target');
+  }
+
   static void openAr(BuildContext context) => context.push('/ar');
   static void openAudio(BuildContext context) => context.push('/audio');
   static void openFavorites(BuildContext context) => context.push('/favorites');
+  static void openFavoriteDetail(BuildContext context, String id) =>
+      context.push('/favorites/$id');
   static void openEditProfile(BuildContext context) =>
       context.push('/edit-profile');
 

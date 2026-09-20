@@ -7,6 +7,8 @@ import '../services/auth_service.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_fonts.dart';
 import '../utils/form_validators.dart';
+import '../widgets/advanced_field_validation.dart';
+import '../widgets/auth_error_popup.dart';
 import '../widgets/auth_micro_interactions.dart';
 
 /// EcoAR Kerkennah sign-up — coastal hero + cream form card (mock layout).
@@ -31,8 +33,10 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
   bool _isConfirmPasswordVisible = false;
   bool _acceptedTerms = false;
   bool _loading = false;
-  bool _submitted = false;
-  int _passwordScore = 0;
+  String _nameLive = '';
+  String _emailLive = '';
+  String _passwordLive = '';
+  String _confirmLive = '';
 
   late final TapGestureRecognizer _termsTap;
   late final TapGestureRecognizer _privacyTap;
@@ -42,14 +46,17 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
     super.initState();
     _termsTap = TapGestureRecognizer()..onTap = _onTerms;
     _privacyTap = TapGestureRecognizer()..onTap = _onPrivacy;
+    _name.addListener(() => setState(() => _nameLive = _name.text));
+    _email.addListener(() => setState(() => _emailLive = _email.text));
     _password.addListener(_onPasswordChanged);
+    _confirmPassword
+        .addListener(() => setState(() => _confirmLive = _confirmPassword.text));
   }
 
   void _onPasswordChanged() {
-    final score = FormValidators.passwordStrength(_password.text);
-    if (score != _passwordScore) {
-      setState(() => _passwordScore = score);
-    }
+    setState(() {
+      _passwordLive = _password.text;
+    });
   }
 
   @override
@@ -89,14 +96,21 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
   Future<void> _onSignUp() async {
     if (_loading) return;
     FocusScope.of(context).unfocus();
-    setState(() => _submitted = true);
-    if (!_formKey.currentState!.validate()) return;
+
+    final nameErr = FormValidators.name(_name.text);
+    final emailErr = FormValidators.email(_email.text);
+    final passErr = FormValidators.password(_password.text);
+    final confirmErr =
+        FormValidators.confirmPassword(_confirmPassword.text, _password.text);
+    final firstErr = nameErr ?? emailErr ?? passErr ?? confirmErr;
+    if (firstErr != null) {
+      await showAuthErrorPopup(context, message: firstErr);
+      return;
+    }
     if (!_acceptedTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Veuillez accepter les conditions d'utilisation."),
-          behavior: SnackBarBehavior.floating,
-        ),
+      await showAuthErrorPopup(
+        context,
+        message: "Veuillez accepter les conditions d'utilisation.",
       );
       return;
     }
@@ -111,14 +125,15 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
     );
     if (!mounted) return;
     setState(() => _loading = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(result.message),
-        backgroundColor: result.success ? _navy : const Color(0xFF8B2E2E),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-    if (result.success) AppNav.goHome(context);
+    if (result.success) {
+      AppNav.goHome(context);
+    } else {
+      await showAuthErrorPopup(
+        context,
+        title: 'Inscription',
+        message: result.message,
+      );
+    }
   }
 
   @override
@@ -193,9 +208,7 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                       ),
                       child: Form(
                         key: _formKey,
-                        autovalidateMode: _submitted
-                            ? AutovalidateMode.onUserInteraction
-                            : AutovalidateMode.disabled,
+                        autovalidateMode: AutovalidateMode.disabled,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -229,7 +242,16 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                               textCapitalization: TextCapitalization.words,
                               autofillHints: const [AutofillHints.name],
                               validator: FormValidators.name,
+                              showValidBorder: FormValidators.name(_nameLive) == null &&
+                                  _nameLive.trim().isNotEmpty,
                             ),
+                            if (_nameLive.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              ValidationRulesPanel(
+                                title: 'Contrôle du nom',
+                                rules: nameRules(_nameLive),
+                              ),
+                            ],
                             const SizedBox(height: 14),
                             _PillFormField(
                               controller: _email,
@@ -239,7 +261,16 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                               textInputAction: TextInputAction.next,
                               autofillHints: const [AutofillHints.email],
                               validator: FormValidators.email,
+                              showValidBorder: FormValidators.email(_emailLive) == null &&
+                                  _emailLive.trim().isNotEmpty,
                             ),
+                            if (_emailLive.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              ValidationRulesPanel(
+                                title: 'Contrôle de l\'email',
+                                rules: emailRules(_emailLive),
+                              ),
+                            ],
                             const SizedBox(height: 14),
                             _PillFormField(
                               controller: _password,
@@ -261,10 +292,18 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                                     : Icons.visibility_outlined,
                               ),
                               validator: FormValidators.password,
+                              showValidBorder:
+                                  FormValidators.password(_passwordLive) == null &&
+                                      _passwordLive.isNotEmpty,
                             ),
-                            if (_password.text.isNotEmpty) ...[
+                            if (_passwordLive.isNotEmpty) ...[
                               const SizedBox(height: 8),
-                              _PasswordStrengthBar(score: _passwordScore),
+                              PasswordStrengthMeter(password: _passwordLive),
+                              const SizedBox(height: 8),
+                              ValidationRulesPanel(
+                                title: 'Règles du mot de passe',
+                                rules: passwordRules(_passwordLive),
+                              ),
                             ],
                             const SizedBox(height: 14),
                             _PillFormField(
@@ -293,7 +332,23 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
                                 v,
                                 _password.text,
                               ),
+                              showValidBorder: FormValidators.confirmPassword(
+                                        _confirmLive,
+                                        _passwordLive,
+                                      ) ==
+                                      null &&
+                                  _confirmLive.isNotEmpty,
                             ),
+                            if (_confirmLive.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              ValidationRulesPanel(
+                                title: 'Confirmation',
+                                rules: confirmPasswordRules(
+                                  _confirmLive,
+                                  _passwordLive,
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 20),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -430,6 +485,7 @@ class _PillFormField extends StatefulWidget {
     this.onFieldSubmitted,
     this.autofillHints,
     this.textCapitalization = TextCapitalization.none,
+    this.showValidBorder = false,
   });
 
   final TextEditingController controller;
@@ -443,6 +499,7 @@ class _PillFormField extends StatefulWidget {
   final void Function(String)? onFieldSubmitted;
   final Iterable<String>? autofillHints;
   final TextCapitalization textCapitalization;
+  final bool showValidBorder;
 
   @override
   State<_PillFormField> createState() => _PillFormFieldState();
@@ -451,6 +508,7 @@ class _PillFormField extends StatefulWidget {
 class _PillFormFieldState extends State<_PillFormField> {
   static const _navy = Color(0xFF1B4A5A);
   static const _border = Color(0xFFD8E3E8);
+  static const _valid = Color(0xFF2F7A4A);
 
   late final FocusNode _focus = FocusNode();
   bool _focused = false;
@@ -472,6 +530,11 @@ class _PillFormFieldState extends State<_PillFormField> {
 
   @override
   Widget build(BuildContext context) {
+    final borderColor = widget.showValidBorder
+        ? _valid
+        : (_focused ? _navy : _border);
+    final borderWidth = (widget.showValidBorder || _focused) ? 1.6 : 1.0;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOutCubic,
@@ -497,7 +560,7 @@ class _PillFormFieldState extends State<_PillFormField> {
         autofillHints: widget.autofillHints,
         validator: widget.validator,
         onFieldSubmitted: widget.onFieldSubmitted,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
+        autovalidateMode: AutovalidateMode.disabled,
         style: AppFonts.dmSans(fontSize: 15, color: _navy),
         decoration: InputDecoration(
           hintText: widget.hint,
@@ -509,87 +572,59 @@ class _PillFormFieldState extends State<_PillFormField> {
             icon: widget.prefix,
             focused: _focused,
           ),
-          suffixIcon: widget.suffix,
+          suffixIcon: _buildSuffix(),
           filled: true,
           fillColor: Colors.white,
-          errorMaxLines: 2,
+          errorStyle: const TextStyle(height: 0, fontSize: 0),
+          errorMaxLines: 1,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: _border),
+            borderSide: BorderSide(color: borderColor, width: borderWidth),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: _border),
+            borderSide: BorderSide(color: borderColor, width: borderWidth),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: _navy, width: 1.6),
+            borderSide: BorderSide(
+              color: widget.showValidBorder ? _valid : _navy,
+              width: 1.6,
+            ),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: Color(0xFF8B2E2E)),
+            borderSide: BorderSide(color: borderColor, width: borderWidth),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: Color(0xFF8B2E2E), width: 1.4),
+            borderSide: BorderSide(
+              color: widget.showValidBorder ? _valid : _navy,
+              width: 1.6,
+            ),
           ),
         ),
       ),
     );
   }
-}
 
-class _PasswordStrengthBar extends StatelessWidget {
-  const _PasswordStrengthBar({required this.score});
-
-  final int score;
-
-  @override
-  Widget build(BuildContext context) {
-    const colors = [
-      Color(0xFF8B2E2E),
-      Color(0xFFC97B3A),
-      Color(0xFFC9A05C),
-      Color(0xFF2F7A4A),
-      Color(0xFF1B6B3A),
-    ];
-    final color = colors[score.clamp(0, 4)];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: List.generate(4, (i) {
-            final filled = i < score;
-            return Expanded(
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 280),
-                curve: Curves.easeOutCubic,
-                height: 4,
-                margin: EdgeInsets.only(right: i < 3 ? 4 : 0),
-                decoration: BoxDecoration(
-                  color: filled ? color : const Color(0xFFD8E3E8),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-            );
-          }),
-        ),
-        const SizedBox(height: 6),
-        AnimatedDefaultTextStyle(
-          duration: const Duration(milliseconds: 280),
-          style: AppFonts.dmSans(
-            fontSize: 11,
-            color: color,
-            height: 1.3,
-          ),
-          child: Text(
-            'Sécurité : ${FormValidators.passwordStrengthLabel(score)}'
-            ' — 8+ car., majuscule, minuscule, chiffre, symbole',
-          ),
-        ),
-      ],
+  Widget? _buildSuffix() {
+    if (!widget.showValidBorder && widget.suffix == null) return null;
+    if (widget.suffix == null) {
+      return const Icon(Icons.check_circle_rounded, color: _valid, size: 22);
+    }
+    if (!widget.showValidBorder) return widget.suffix;
+    return SizedBox(
+      width: 88,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          const Icon(Icons.check_circle_rounded, color: _valid, size: 20),
+          widget.suffix!,
+        ],
+      ),
     );
   }
 }

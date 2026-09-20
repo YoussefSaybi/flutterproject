@@ -6,6 +6,7 @@ import '../screens/audio_story_screen.dart';
 import '../screens/chatbot_screen.dart';
 import '../screens/credits_screen.dart';
 import '../screens/edit_profile_screen.dart';
+import '../screens/favorite_detail_screen.dart';
 import '../screens/favorites_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/eco_ar_forgot_password_screen.dart';
@@ -124,6 +125,11 @@ GoRouter createRouter() {
       GoRoute(path: '/ar', builder: (_, __) => const ArLightScreen()),
       GoRoute(path: '/edit-profile', builder: (_, __) => const EditProfileScreen()),
       GoRoute(path: '/favorites', builder: (_, __) => const FavoritesScreen()),
+      GoRoute(
+        path: '/favorites/:id',
+        builder: (context, state) =>
+            FavoriteDetailScreen(id: state.pathParameters['id']!),
+      ),
       GoRoute(path: '/chatbot', builder: (_, __) => const ChatbotScreen()),
     ],
   );

@@ -6,6 +6,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../widgets/common_widgets.dart';
 
+/// Parcours detail (opened from home / favorites) — same circuit fiche.
 class ParcoursDetailScreen extends StatelessWidget {
   const ParcoursDetailScreen({super.key, required this.id});
 
@@ -20,191 +21,206 @@ class ParcoursDetailScreen extends StatelessWidget {
     final top = MediaQuery.paddingOf(context).top;
 
     return Scaffold(
-      backgroundColor: AppColors.cream,
-      body: Column(
+      backgroundColor: const Color(0xFFF8F4EC),
+      body: ListView(
+        padding: EdgeInsets.zero,
         children: [
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                Stack(
-                  children: [
-                    Image.asset(
-                      parcours.imageAsset,
-                      height: 280,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                    Positioned(
-                      top: top + 8,
-                      left: 12,
-                      child: SoftCircleButton(
-                        icon: Icons.arrow_back_ios_new_rounded,
-                        onPressed: () => AppNav.popOr(context, '/home'),
-                      ),
-                    ),
-                    Positioned(
-                      top: top + 8,
-                      right: 12,
-                      child: SoftCircleButton(
-                        icon: Icons.bookmark_border_rounded,
-                        onPressed: () {},
-                      ),
-                    ),
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: Container(
-                        height: 28,
-                        decoration: const BoxDecoration(
-                          color: AppColors.cream,
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(AppLayout.radiusSheet),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+          Stack(
+            children: [
+              Image.asset(
+                parcours.imageAsset,
+                height: 300,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  height: 300,
+                  color: AppColors.navy,
                 ),
-                Transform.translate(
-                  offset: const Offset(0, -8),
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: AppColors.cream,
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(AppLayout.radiusSheet),
-                      ),
-                      boxShadow: AppLayout.sheetShadow,
+              ),
+              Positioned(
+                top: top + 8,
+                left: 14,
+                child: SoftCircleButton(
+                  icon: Icons.arrow_back_ios_new_rounded,
+                  onPressed: () => AppNav.popOr(context, '/parcours'),
+                ),
+              ),
+              Positioned(
+                top: top + 8,
+                right: 14,
+                child: SoftCircleButton(
+                  icon: Icons.bookmark_border_rounded,
+                  onPressed: () {},
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  height: 32,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(28),
                     ),
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          parcours.title,
-                          style: AppFonts.playfair(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.navy,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            _Stat(icon: Icons.schedule, value: parcours.duration, label: 'Durée'),
-                            _Stat(icon: Icons.place_outlined, value: '${parcours.places}', label: 'Étapes'),
-                            _Stat(icon: Icons.signal_cellular_alt, value: parcours.difficulty, label: 'Difficulté'),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          parcours.description,
-                          style: AppFonts.dmSans(color: AppColors.textSecondary, height: 1.45),
-                        ),
-                        const SizedBox(height: 22),
-                        Text(
-                          'Étapes du parcours',
-                          style: AppFonts.playfair(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.navy,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        ...List.generate(parcours.steps.length, (i) {
-                          final step = parcours.steps[i];
-                          final locked = i == parcours.steps.length - 1;
-                          return Opacity(
-                            opacity: locked ? 0.45 : 1,
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: InkWell(
-                                onTap: locked
-                                    ? null
-                                    : () => i.isEven
-                                        ? AppNav.openAr(context)
-                                        : AppNav.openAudio(context),
-                                child: Row(
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Transform.translate(
+            offset: const Offset(0, -8),
+            child: Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(28),
+                ),
+              ),
+              padding: const EdgeInsets.fromLTRB(22, 18, 22, 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    parcours.title,
+                    style: AppFonts.playfair(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF123F4A),
+                      height: 1.15,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      _Stat(
+                        icon: Icons.schedule_rounded,
+                        value: parcours.duration,
+                        label: 'Durée',
+                      ),
+                      _Divider(),
+                      _Stat(
+                        icon: Icons.place_outlined,
+                        value: '${parcours.places}',
+                        label: 'Étapes',
+                      ),
+                      _Divider(),
+                      _Stat(
+                        icon: Icons.signal_cellular_alt_rounded,
+                        value: parcours.difficulty,
+                        label: 'Difficulté',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    parcours.description,
+                    style: AppFonts.dmSans(
+                      fontSize: 14,
+                      height: 1.5,
+                      color: const Color(0xFF5B6670),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Étapes du parcours',
+                    style: AppFonts.dmSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF123F4A),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  ...List.generate(parcours.steps.length, (i) {
+                    final step = parcours.steps[i];
+                    final locked = i == parcours.steps.length - 1;
+                    return Opacity(
+                      opacity: locked ? 0.4 : 1,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: InkWell(
+                          onTap: locked
+                              ? null
+                              : () => i.isEven
+                                  ? AppNav.openAr(context)
+                                  : AppNav.openAudio(context),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 26,
+                                height: 26,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: locked
+                                      ? const Color(0xFF9AA8AE)
+                                      : const Color(0xFFC9A227),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  '${i + 1}',
+                                  style: AppFonts.dmSans(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.asset(
+                                  step.imageAsset,
+                                  width: 54,
+                                  height: 54,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(
-                                      width: 28,
-                                      height: 28,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: locked
-                                            ? AppColors.textSecondary
-                                            : AppColors.gold,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Text(
-                                        '${i + 1}',
-                                        style: AppFonts.dmSans(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 12,
-                                        ),
+                                    Text(
+                                      step.title,
+                                      style: AppFonts.dmSans(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF123F4A),
                                       ),
                                     ),
-                                    const SizedBox(width: 10),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Image.asset(
-                                        step.imageAsset,
-                                        width: 56,
-                                        height: 56,
-                                        fit: BoxFit.cover,
+                                    Text(
+                                      step.subtitle,
+                                      style: AppFonts.dmSans(
+                                        fontSize: 13,
+                                        color: const Color(0xFF5B6670),
                                       ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            step.title,
-                                            style: AppFonts.dmSans(
-                                              color: AppColors.navy,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                          Text(
-                                            step.subtitle,
-                                            style: AppFonts.dmSans(
-                                              color: AppColors.textSecondary,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Icon(
-                                      locked
-                                          ? Icons.lock_outline_rounded
-                                          : Icons.chevron_right_rounded,
-                                      color: AppColors.navy,
                                     ),
                                   ],
                                 ),
                               ),
-                            ),
-                          );
-                        }),
-                      ],
+                              Icon(
+                                locked
+                                    ? Icons.lock_outline_rounded
+                                    : Icons.chevron_right_rounded,
+                                color: const Color(0xFF9AA8AE),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 8),
+                  PrimaryButton(
+                    label: 'Commencer le parcours',
+                    onPressed: () => AppNav.startParcours(
+                      context,
+                      id: parcours.id,
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-              child: PrimaryButton(
-                label: 'Commencer le parcours',
-                onPressed: () => AppNav.openAr(context),
+                ],
               ),
             ),
           ),
@@ -213,8 +229,26 @@ class ParcoursDetailScreen extends StatelessWidget {
     );
   }
 }
+
+class _Divider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      height: 42,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      color: const Color(0xFFE2E6E8),
+    );
+  }
+}
+
 class _Stat extends StatelessWidget {
-  const _Stat({required this.icon, required this.value, required this.label});
+  const _Stat({
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
+
   final IconData icon;
   final String value;
   final String label;
@@ -224,13 +258,24 @@ class _Stat extends StatelessWidget {
     return Expanded(
       child: Column(
         children: [
-          Icon(icon, color: AppColors.gold, size: 22),
-          const SizedBox(height: 4),
+          Icon(icon, color: const Color(0xFFC9A227), size: 22),
+          const SizedBox(height: 6),
           Text(
             value,
-            style: AppFonts.dmSans(fontWeight: FontWeight.w700, color: AppColors.navy),
+            style: AppFonts.dmSans(
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+              color: const Color(0xFF123F4A),
+            ),
           ),
-          Text(label, style: AppFonts.dmSans(fontSize: 11, color: AppColors.textSecondary)),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: AppFonts.dmSans(
+              fontSize: 12,
+              color: const Color(0xFF5B6670),
+            ),
+          ),
         ],
       ),
     );

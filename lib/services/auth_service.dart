@@ -240,6 +240,12 @@ class AuthService extends ChangeNotifier {
     AppSession.instance.clearSession();
   }
 
+  /// Clears in-memory user without touching prefs (used by intro reset).
+  void logoutLocalOnly() {
+    _current = null;
+    notifyListeners();
+  }
+
   void updateProfile({
     String? name,
     String? email,

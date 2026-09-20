@@ -6,8 +6,8 @@ import '../services/auth_service.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
-import '../widgets/common_widgets.dart';
 
+/// Profile — teal palm header image + larger white cards (CEO mock).
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -15,225 +15,334 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = AuthService.instance.currentUser;
     final name = user?.name ?? 'Mohamed Azmi';
-    final email = user?.email ?? AuthService.demoEmail;
-    final city = (user?.city.isNotEmpty ?? false)
-        ? user!.city
-        : 'Sfax, Tunisie';
+    final email = user?.email ?? 'azmi.heni@gmail.com';
+    final city =
+        (user?.city.isNotEmpty ?? false) ? user!.city : 'Sfax, Tunisie';
     final top = MediaQuery.paddingOf(context).top;
+    final size = MediaQuery.sizeOf(context);
+    // Tall header so palm shadows read big like the mock.
+    final headerH = top + size.height * 0.28;
 
     return Scaffold(
-      backgroundColor: AppColors.cream,
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: top + 140,
+      backgroundColor: const Color(0xFFF8F4EC),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ── Green/teal header = user palm picture ──
+            SizedBox(
+              height: headerH,
+              width: double.infinity,
               child: Stack(
-                clipBehavior: Clip.none,
+                fit: StackFit.expand,
                 children: [
-                  Positioned.fill(
-                    child: Container(color: AppColors.navy),
+                  Image.asset(
+                    AppAssets.bgProfileHeader,
+                    fit: BoxFit.cover,
+                    // Zoom palms in top-left
+                    alignment: const Alignment(-0.9, -1.0),
+                    errorBuilder: (_, __, ___) => const ColoredBox(
+                      color: Color(0xFF005664),
+                    ),
                   ),
                   Positioned(
-                    left: -8,
-                    top: top + 16,
-                    child: Opacity(
-                      opacity: 0.16,
-                      child: PackIcon(
-                        AppAssets.iconPalm,
-                        size: 110,
-                        color: AppColors.gold,
+                    top: top + 8,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Image.asset(
+                        AppAssets.logoGold,
+                        height: 48,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Text(
+                          'EcoAR',
+                          style: AppFonts.playfair(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.gold,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(20, top + 12, 16, 52),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Mon profil',
-                            style: AppFonts.playfair(
-                              color: AppColors.white,
-                              fontSize: 30,
-                              fontWeight: FontWeight.w700,
-                            ),
+                  Positioned(
+                    top: top + 10,
+                    right: 18,
+                    child: GestureDetector(
+                      onTap: () => AppNav.openEditProfile(context),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            width: 1.3,
                           ),
                         ),
-                        SoftCircleButton(
-                          icon: Icons.settings_outlined,
-                          background: AppColors.white.withValues(alpha: 0.15),
-                          foreground: AppColors.white,
-                          size: 40,
-                          onPressed: () => AppNav.openEditProfile(context),
+                        child: const Icon(
+                          Icons.settings_outlined,
+                          color: Colors.white,
+                          size: 18,
                         ),
-                      ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 22,
+                    bottom: 52,
+                    child: Text(
+                      'Mon profil',
+                      style: AppFonts.playfair(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        height: 1.05,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Transform.translate(
-              offset: const Offset(0, -36),
+
+            // ── Larger white widgets ──
+            Transform.translate(
+              offset: const Offset(0, -44),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
                 child: Column(
                   children: [
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius:
-                            BorderRadius.circular(AppLayout.radiusCard),
-                        boxShadow: AppLayout.softShadow,
-                      ),
-                      child: Column(
-                        children: [
-                          const CircleAvatar(
-                            radius: 40,
-                            backgroundImage: AssetImage(AppAssets.bgCoast),
-                          ),
-                          const SizedBox(height: 14),
-                          Text(
-                            name,
-                            textAlign: TextAlign.center,
-                            style: AppFonts.playfair(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.navy,
+                    // Identity card
+                    GestureDetector(
+                      onTap: () => AppNav.openEditProfile(context),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.fromLTRB(16, 18, 12, 18),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(22),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.08),
+                              blurRadius: 18,
+                              offset: const Offset(0, 6),
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            email,
-                            textAlign: TextAlign.center,
-                            style: AppFonts.dmSans(
-                              fontSize: 14,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.place_outlined,
-                                size: 16,
-                                color: AppColors.textSecondary,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                city,
-                                style: AppFonts.dmSans(
-                                  fontSize: 13,
-                                  color: AppColors.textSecondary,
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 68,
+                              height: 68,
+                              child: ClipOval(
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Image.asset(
+                                      AppAssets.bgCoast,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) =>
+                                          const ColoredBox(
+                                        color: Color(0xFFD8E3E8),
+                                      ),
+                                    ),
+                                    Container(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.18,
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.person_rounded,
+                                      size: 36,
+                                      color: Colors.white70,
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    name,
+                                    style: AppFonts.playfair(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF123F4A),
+                                      height: 1.15,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _InfoLine(
+                                    icon: Icons.mail_outline_rounded,
+                                    text: email,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  _InfoLine(
+                                    icon: Icons.place_outlined,
+                                    text: city,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              color: Color(0xFFB0B8BF),
+                              size: 28,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
+
+                    // Stats — larger tiles
                     Row(
                       children: [
-                        const _StatColumn(
+                        const _StatTile(
+                          icon: Icons.place_outlined,
                           value: '12',
                           label: 'Lieux visités',
                         ),
-                        const SizedBox(width: 8),
-                        const _StatColumn(
+                        const SizedBox(width: 10),
+                        _StatTile(
+                          icon: Icons.alt_route_rounded,
                           value: '3',
                           label: 'Parcours',
+                          onTap: () => context.go('/parcours'),
                         ),
-                        const SizedBox(width: 8),
-                        _StatColumn(
+                        const SizedBox(width: 10),
+                        _StatTile(
+                          icon: Icons.favorite_border_rounded,
                           value: '5',
                           label: 'Favoris',
                           onTap: () => AppNav.openFavorites(context),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+
+                    // Space so menu sits lower
+                    const SizedBox(height: 22),
+
+                    // Menu card — bigger rows (Mes favoris / Mes parcours…)
                     Container(
+                      width: double.infinity,
                       decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius:
-                            BorderRadius.circular(AppLayout.radiusCard),
-                        boxShadow: AppLayout.softShadow,
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(22),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.07),
+                            blurRadius: 16,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
                       ),
                       child: Column(
                         children: [
-                          _MenuTile(
+                          _MenuRow(
                             icon: Icons.favorite_border_rounded,
                             label: 'Mes favoris',
                             onTap: () => AppNav.openFavorites(context),
                           ),
-                          const Divider(height: 1, color: AppColors.border),
-                          _MenuTile(
-                            icon: Icons.route_outlined,
+                          const _Hairline(),
+                          _MenuRow(
+                            icon: Icons.map_outlined,
                             label: 'Mes parcours',
-                            onTap: () => AppNav.openParcoursDetail(context),
+                            onTap: () => context.go('/parcours'),
                           ),
-                          const Divider(height: 1, color: AppColors.border),
-                          _MenuTile(
+                          const _Hairline(),
+                          _MenuRow(
                             icon: Icons.download_outlined,
                             label: 'Mes téléchargements',
-                            onTap: () {},
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Téléchargements — bientôt disponible.',
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            },
                           ),
-                          const Divider(height: 1, color: AppColors.border),
-                          _MenuTile(
+                          const _Hairline(),
+                          _MenuRow(
                             icon: Icons.settings_outlined,
                             label: 'Paramètres',
                             onTap: () => AppNav.openEditProfile(context),
                           ),
-                          const Divider(height: 1, color: AppColors.border),
-                          _MenuTile(
+                          const _Hairline(),
+                          _MenuRow(
                             icon: Icons.help_outline_rounded,
                             label: 'Aide & support',
-                            onTap: () {},
-                          ),
-                          const Divider(height: 1, color: AppColors.border),
-                          _MenuTile(
-                            icon: Icons.handshake_outlined,
-                            label: 'Partenaires & mentions légales',
-                            onTap: () => AppNav.openCredits(context),
-                          ),
-                          const Divider(height: 1, color: AppColors.border),
-                          _MenuTile(
-                            icon: Icons.logout_rounded,
-                            label: 'Se déconnecter',
                             onTap: () {
-                              AuthService.instance.logout();
-                              context.go('/login');
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Aide & support — bientôt disponible.',
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
                             },
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 28),
                   ],
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class _StatColumn extends StatelessWidget {
-  const _StatColumn({
+class _InfoLine extends StatelessWidget {
+  const _InfoLine({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: const Color(0xFF6B7280)),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppFonts.dmSans(
+              fontSize: 13,
+              color: const Color(0xFF6B7280),
+              height: 1.2,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  const _StatTile({
+    required this.icon,
     required this.value,
     required this.label,
     this.onTap,
   });
 
+  final IconData icon;
   final String value;
   final String label;
   final VoidCallback? onTap;
@@ -241,34 +350,45 @@ class _StatColumn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: InkWell(
+      child: GestureDetector(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppLayout.radiusMedium),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 6),
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
           decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(AppLayout.radiusMedium),
-            boxShadow: AppLayout.softShadow,
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE6E2DA)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Column(
             children: [
+              Icon(icon, size: 22, color: const Color(0xFFC9A227)),
+              const SizedBox(height: 8),
               Text(
                 value,
                 style: AppFonts.playfair(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.gold,
+                  color: const Color(0xFF123F4A),
+                  height: 1,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               Text(
                 label,
                 textAlign: TextAlign.center,
+                maxLines: 2,
                 style: AppFonts.dmSans(
-                  fontSize: 11,
-                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                  color: const Color(0xFF5B6670),
                   fontWeight: FontWeight.w500,
+                  height: 1.15,
                 ),
               ),
             ],
@@ -279,8 +399,23 @@ class _StatColumn extends StatelessWidget {
   }
 }
 
-class _MenuTile extends StatelessWidget {
-  const _MenuTile({
+class _Hairline extends StatelessWidget {
+  const _Hairline();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Divider(
+      height: 1,
+      thickness: 1,
+      indent: 56,
+      endIndent: 18,
+      color: Color(0xFFE6E2DA),
+    );
+  }
+}
+
+class _MenuRow extends StatelessWidget {
+  const _MenuRow({
     required this.icon,
     required this.label,
     required this.onTap,
@@ -292,20 +427,31 @@ class _MenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
+    return InkWell(
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 2),
-      leading: Icon(icon, color: AppColors.navy),
-      title: Text(
-        label,
-        style: AppFonts.dmSans(
-          color: AppColors.navy,
-          fontWeight: FontWeight.w600,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 17),
+        child: Row(
+          children: [
+            Icon(icon, size: 24, color: const Color(0xFF123F4A)),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                label,
+                style: AppFonts.dmSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF123F4A),
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 24,
+              color: Color(0xFFB0B8BF),
+            ),
+          ],
         ),
-      ),
-      trailing: const Icon(
-        Icons.chevron_right_rounded,
-        color: AppColors.navy,
       ),
     );
   }

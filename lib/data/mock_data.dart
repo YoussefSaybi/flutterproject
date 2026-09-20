@@ -38,18 +38,22 @@ class ParcoursStep {
 
 class FavoriteItem {
   const FavoriteItem({
+    required this.id,
     required this.title,
     required this.category,
     required this.location,
     required this.type,
     required this.imageAsset,
+    required this.description,
   });
 
+  final String id;
   final String title;
   final String category;
   final String location;
   final String type;
   final String imageAsset;
+  final String description;
 }
 
 class MockData {
@@ -68,22 +72,22 @@ class MockData {
       steps: [
         ParcoursStep(
           title: 'Charfiya',
-          subtitle: 'Charfiya — Les anciens chantiers navals',
+          subtitle: 'Les anciens chantiers navals',
           imageAsset: AppAssets.bgBoat,
         ),
         ParcoursStep(
-          title: 'Abbassiya',
-          subtitle: 'Port et traditions de pêche',
+          title: 'Port traditionnel',
+          subtitle: 'Cœur battant des îliens',
           imageAsset: AppAssets.bgCoast,
         ),
         ParcoursStep(
-          title: 'Île de Chergui',
-          subtitle: 'Paysages et patrimoine vivant',
+          title: 'Abbassiya',
+          subtitle: 'Histoire et spiritualité',
           imageAsset: AppAssets.bgVillage,
         ),
         ParcoursStep(
           title: 'Retour au large',
-          subtitle: 'Horizon et transmission',
+          subtitle: 'Horizons et mémoire',
           imageAsset: AppAssets.bgFisherman,
         ),
       ],
@@ -115,46 +119,64 @@ class MockData {
 
   static const favorites = [
     FavoriteItem(
-      title: 'Borj El Hsár',
+      id: 'borj-el-hsar',
+      title: 'Borj El Hsar',
       category: 'Site historique',
       location: 'Île Chergui',
       type: 'lieux',
       imageAsset: AppAssets.bgCoast,
+      description:
+          'Fortin historique dominant la côte de Chergui, témoin de la mémoire défensive et maritime des Kerkennah.',
     ),
     FavoriteItem(
+      id: 'mosquee-sidi-youssef',
       title: 'Mosquée Sidi Youssef',
       category: 'Lieu religieux',
       location: 'Île Gharbi',
       type: 'lieux',
       imageAsset: AppAssets.bgVillage,
+      description:
+          'Lieu de culte et de rassemblement sur l\'île Gharbi, au cœur de la vie spirituelle et villageoise.',
     ),
     FavoriteItem(
+      id: 'plage-sidi-fraj',
       title: 'Plage de Sidi Fraj',
       category: 'Site naturel',
       location: 'Île Chergui',
       type: 'lieux',
       imageAsset: AppAssets.bgMap,
+      description:
+          'Longue plage de sable et d\'horizon méditerranéen, idéale pour une pause nature et lumière.',
     ),
     FavoriteItem(
+      id: 'atelier-charfiya',
       title: 'Atelier de charfiya',
       category: 'Savoir-faire local',
       location: 'Kerkennah',
       type: 'lieux',
       imageAsset: AppAssets.bgBoat,
+      description:
+          'Découvrez le savoir-faire ancestral de la charfiya, filets de pêche traditionnels des îles Kerkennah.',
     ),
     FavoriteItem(
+      id: 'circuit-memoire-maritime',
       title: 'Circuit Mémoire maritime',
       category: 'Parcours',
       location: 'Kerkennah',
       type: 'parcours',
       imageAsset: AppAssets.bgBoat,
+      description:
+          'Un voyage à travers l\'histoire maritime et les traditions vivantes des Kerkennah.',
     ),
     FavoriteItem(
+      id: 'voix-pecheurs',
       title: 'La voix des pêcheurs',
       category: 'Récit audio',
       location: 'Chergui',
       type: 'recits',
       imageAsset: AppAssets.bgFisherman,
+      description:
+          'Écoutez les témoignages des pêcheurs de Chergui, gardiens d\'une mémoire orale unique.',
     ),
   ];
 }

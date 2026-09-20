@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'auth_service.dart';
@@ -23,10 +24,27 @@ class AppSession {
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
     _ready = true;
+
+    // While building the demo, always replay the full intro on cold start:
+    // Splash → Partenaires → Onboarding (×3) → Login → Home.
+    // Remove this block when you want “stay logged in” between launches.
+    if (kDebugMode) {
+      await resetIntroFlow();
+      return;
+    }
+
     final email = _prefs?.getString(_kSessionEmail);
     if (email != null && email.isNotEmpty) {
       AuthService.instance.restoreSession(email);
     }
+  }
+
+  /// Clears partners / onboarding flags and saved login (debug intro replay).
+  Future<void> resetIntroFlow() async {
+    await _prefs?.remove(_kOnboarding);
+    await _prefs?.remove(_kCredits);
+    await _prefs?.remove(_kSessionEmail);
+    AuthService.instance.logoutLocalOnly();
   }
 
   Future<void> completeOnboarding() async {
@@ -46,10 +64,12 @@ class AppSession {
   }
 
   /// Splash destination after brand display.
-  /// Opening flow (not logged in): Home → Partenaires → 3 pages → Login.
+  /// Opening flow: Splash → Partenaires → Onboarding → Login → Home.
   String nextRoute() {
     if (AuthService.instance.isLoggedIn) return '/home';
-    return '/credits';
+    if (!hasSeenCredits) return '/credits';
+    if (!hasSeenOnboarding) return '/onboarding';
+    return '/login';
   }
 
   /// After partners flashscreen → always the 3 explain pages, then login.

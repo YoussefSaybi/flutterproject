@@ -32,10 +32,14 @@ class AppAssets {
   static const bgSignupHero = 'assets/images/bg_signup_hero.jpg';
   /// Forgot password — dedicated coastal hero.
   static const bgForgotPassword = 'assets/bg/forgot_password_hero.jpg';
+  /// Profile header — teal with palm shadow (user asset).
+  static const bgProfileHeader = 'assets/bg/profile_header.jpg';
   /// Splash / loading alternate full-screen ocean.
   static const bgOceanFull = 'assets/images/bg_ocean_full.jpg';
   static const bgKerkennahHero = bgSignupHero;
-  static const bgMap = 'assets/bg/map.jpg';
+  static const bgMap = 'assets/bg/kerkennah_islands_map.jpg';
+  /// Legacy photo (not the islands map).
+  static const bgMapPhoto = 'assets/bg/map.jpg';
   static const bgFisherman = 'assets/bg/fisherman.jpg';
   static const bg06 = 'assets/bg/06_placeholder.jpg';
   static const bg07 = 'assets/bg/07_placeholder.jpg';

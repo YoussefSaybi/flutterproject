@@ -7,6 +7,8 @@ import '../services/auth_service.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_fonts.dart';
 import '../utils/form_validators.dart';
+import '../widgets/advanced_field_validation.dart';
+import '../widgets/auth_error_popup.dart';
 import '../widgets/auth_micro_interactions.dart';
 
 /// EcoAR Kerkennah login — hero photo + overlapping cream form card.
@@ -26,7 +28,15 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
   final _password = TextEditingController();
   bool _obscure = true;
   bool _loading = false;
-  bool _submitted = false;
+  String _idLive = '';
+  String _passLive = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _email.addListener(() => setState(() => _idLive = _email.text));
+    _password.addListener(() => setState(() => _passLive = _password.text));
+  }
 
   @override
   void dispose() {
@@ -38,8 +48,14 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
   Future<void> _onLogin() async {
     if (_loading) return;
     FocusScope.of(context).unfocus();
-    setState(() => _submitted = true);
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    final idErr = FormValidators.loginIdentifier(_email.text);
+    final passErr = FormValidators.loginPassword(_password.text);
+    final firstErr = idErr ?? passErr;
+    if (firstErr != null) {
+      await showAuthErrorPopup(context, message: firstErr);
+      return;
+    }
 
     setState(() => _loading = true);
     final result = AuthService.instance.login(
@@ -48,14 +64,15 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
     );
     if (!mounted) return;
     setState(() => _loading = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(result.message),
-        backgroundColor: result.success ? _navy : const Color(0xFF8B2E2E),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-    if (result.success) AppNav.goHome(context);
+    if (result.success) {
+      AppNav.goHome(context);
+    } else {
+      await showAuthErrorPopup(
+        context,
+        title: 'Connexion',
+        message: result.message,
+      );
+    }
   }
 
   void _onForgotPassword() {
@@ -158,9 +175,7 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
                     ),
                     child: Form(
                       key: _formKey,
-                      autovalidateMode: _submitted
-                          ? AutovalidateMode.onUserInteraction
-                          : AutovalidateMode.disabled,
+                      autovalidateMode: AutovalidateMode.disabled,
                       child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -198,7 +213,17 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
                             AutofillHints.telephoneNumber,
                           ],
                           validator: FormValidators.loginIdentifier,
+                          showValidBorder:
+                              FormValidators.loginIdentifier(_idLive) == null &&
+                                  _idLive.trim().isNotEmpty,
                         ),
+                        if (_idLive.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          ValidationRulesPanel(
+                            title: 'Contrôle identifiant',
+                            rules: loginIdentifierRules(_idLive),
+                          ),
+                        ],
                         const SizedBox(height: 14),
                         _PillField(
                           controller: _password,
@@ -209,6 +234,9 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
                           autofillHints: const [AutofillHints.password],
                           onFieldSubmitted: (_) => _onLogin(),
                           validator: FormValidators.loginPassword,
+                          showValidBorder:
+                              FormValidators.loginPassword(_passLive) == null &&
+                                  _passLive.isNotEmpty,
                           suffix: AuthBounceIconButton(
                             tooltip: _obscure
                                 ? 'Afficher le mot de passe'
@@ -220,6 +248,13 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
                                 : Icons.visibility_off_outlined,
                           ),
                         ),
+                        if (_passLive.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          ValidationRulesPanel(
+                            title: 'Contrôle mot de passe',
+                            rules: loginPasswordRules(_passLive),
+                          ),
+                        ],
                         const SizedBox(height: 8),
                         Align(
                           alignment: Alignment.centerRight,
@@ -323,6 +358,7 @@ class _PillField extends StatefulWidget {
     this.validator,
     this.onFieldSubmitted,
     this.autofillHints,
+    this.showValidBorder = false,
   });
 
   final TextEditingController controller;
@@ -335,6 +371,7 @@ class _PillField extends StatefulWidget {
   final String? Function(String?)? validator;
   final void Function(String)? onFieldSubmitted;
   final Iterable<String>? autofillHints;
+  final bool showValidBorder;
 
   @override
   State<_PillField> createState() => _PillFieldState();
@@ -343,6 +380,7 @@ class _PillField extends StatefulWidget {
 class _PillFieldState extends State<_PillField> {
   static const _navy = Color(0xFF1B4A5A);
   static const _border = Color(0xFFD8E3E8);
+  static const _valid = Color(0xFF2F7A4A);
 
   late final FocusNode _focus = FocusNode();
   bool _focused = false;
@@ -362,8 +400,31 @@ class _PillFieldState extends State<_PillField> {
     super.dispose();
   }
 
+  Widget? _buildSuffix() {
+    if (!widget.showValidBorder && widget.suffix == null) return null;
+    if (widget.suffix == null) {
+      return const Icon(Icons.check_circle_rounded, color: _valid, size: 22);
+    }
+    if (!widget.showValidBorder) return widget.suffix;
+    return SizedBox(
+      width: 88,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          const Icon(Icons.check_circle_rounded, color: _valid, size: 20),
+          widget.suffix!,
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final borderColor = widget.showValidBorder
+        ? _valid
+        : (_focused ? _navy : _border);
+    final borderWidth = (widget.showValidBorder || _focused) ? 1.6 : 1.0;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOutCubic,
@@ -388,7 +449,7 @@ class _PillFieldState extends State<_PillField> {
         autofillHints: widget.autofillHints,
         validator: widget.validator,
         onFieldSubmitted: widget.onFieldSubmitted,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
+        autovalidateMode: AutovalidateMode.disabled,
         style: AppFonts.dmSans(fontSize: 15, color: _navy),
         inputFormatters: [
           FilteringTextInputFormatter.deny(RegExp(r'[\n\r]')),
@@ -403,31 +464,38 @@ class _PillFieldState extends State<_PillField> {
             icon: widget.prefix,
             focused: _focused,
           ),
-          suffixIcon: widget.suffix,
+          suffixIcon: _buildSuffix(),
           filled: true,
           fillColor: Colors.white,
-          errorMaxLines: 2,
+          errorStyle: const TextStyle(height: 0, fontSize: 0),
+          errorMaxLines: 1,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: _border),
+            borderSide: BorderSide(color: borderColor, width: borderWidth),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: _border),
+            borderSide: BorderSide(color: borderColor, width: borderWidth),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: _navy, width: 1.6),
+            borderSide: BorderSide(
+              color: widget.showValidBorder ? _valid : _navy,
+              width: 1.6,
+            ),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: Color(0xFF8B2E2E)),
+            borderSide: BorderSide(color: borderColor, width: borderWidth),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: Color(0xFF8B2E2E), width: 1.4),
+            borderSide: BorderSide(
+              color: widget.showValidBorder ? _valid : _navy,
+              width: 1.6,
+            ),
           ),
         ),
       ),
