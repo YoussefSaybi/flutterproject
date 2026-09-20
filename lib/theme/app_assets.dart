@@ -115,6 +115,12 @@ class AppAssets {
   static const iconLandmarkGold = 'assets/icons/42_icon.png';
   static const iconPalm = 'assets/icons/43_icon.png';
   static const iconVase = 'assets/icons/44_icon.png';
+  /// Onboarding themes — user medallions (transparent bg).
+  static const iconThemePatrimoine = 'assets/icons/icon_theme_patrimoine.png';
+  static const iconThemeCulture = 'assets/icons/icon_theme_culture.png';
+  static const iconThemeTraditions = 'assets/icons/icon_theme_traditions.png';
+  static const iconThemeScan = 'assets/icons/icon_theme_scan.png';
+  static const iconThemeDiscover = 'assets/icons/icon_theme_discover.png';
   static const iconDoc = 'assets/icons/45_icon.png';
   static const iconCamera = 'assets/icons/46_icon.png';
 

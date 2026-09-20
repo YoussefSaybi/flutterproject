@@ -290,16 +290,19 @@ class _SplashScreenState extends State<SplashScreen>
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const MeliesLogo(height: 40),
-                          const SizedBox(height: 6),
-                          Text(
-                            'SOCIÉTÉ DE PRODUCTION',
-                            textAlign: TextAlign.center,
-                            style: AppFonts.dmSans(
-                              color: const Color(0xFFF2F0EA),
-                              fontSize: 10,
-                              letterSpacing: 2.6,
-                              fontWeight: FontWeight.w500,
+                          const MeliesLogo(height: 128),
+                          Transform.translate(
+                            offset: const Offset(0, -10),
+                            child: Text(
+                              'SOCIÉTÉ DE PRODUCTION',
+                              textAlign: TextAlign.center,
+                              style: AppFonts.dmSans(
+                                color: const Color(0xFFF2F0EA),
+                                fontSize: 13,
+                                letterSpacing: 3.0,
+                                fontWeight: FontWeight.w500,
+                                height: 1.0,
+                              ),
                             ),
                           ),
                         ],

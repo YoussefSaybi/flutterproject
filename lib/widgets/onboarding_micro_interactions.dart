@@ -235,12 +235,16 @@ class AnimatedGoldGlyph extends StatefulWidget {
     this.onTap,
     this.pulse = false,
     this.size = 58,
+    /// When false, child fills the circle (for photo medallions that already
+    /// include their own gold ring).
+    this.chrome = true,
   });
 
   final Widget child;
   final VoidCallback? onTap;
   final bool pulse;
   final double size;
+  final bool chrome;
 
   @override
   State<AnimatedGoldGlyph> createState() => _AnimatedGoldGlyphState();
@@ -319,21 +323,39 @@ class _AnimatedGoldGlyphState extends State<AnimatedGoldGlyph>
             child: Container(
               width: widget.size,
               height: widget.size,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.gold.withValues(alpha: 0.12),
-                border: Border.all(color: AppColors.gold, width: 1.6),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.gold.withValues(alpha: glow),
-                    blurRadius: 16,
-                    spreadRadius: 1,
-                  ),
-                ],
-              ),
-              child: Center(
-                child: SizedBox(width: 28, height: 28, child: widget.child),
-              ),
+              decoration: widget.chrome
+                  ? BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.gold.withValues(alpha: 0.12),
+                      border: Border.all(color: AppColors.gold, width: 1.6),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.gold.withValues(alpha: glow),
+                          blurRadius: 16,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    )
+                  : BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.gold.withValues(alpha: glow * 0.85),
+                          blurRadius: 14,
+                          spreadRadius: 0,
+                        ),
+                      ],
+                    ),
+              clipBehavior: widget.chrome ? Clip.none : Clip.antiAlias,
+              child: widget.chrome
+                  ? Center(
+                      child: SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: widget.child,
+                      ),
+                    )
+                  : widget.child,
             ),
           );
         },

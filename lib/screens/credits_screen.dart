@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +11,7 @@ import '../widgets/common_widgets.dart';
 
 /// Crédits / Partenaires — flashscreen (auto-advance, no Continuer).
 /// Launch flow: Splash → Credits → Onboarding (Découvrir Kerkennah).
+/// Layout matches CEO reference: open photo, floating partner logos, leaf under copy.
 class CreditsScreen extends StatefulWidget {
   const CreditsScreen({super.key, this.fromMenu = false});
 
@@ -38,9 +37,8 @@ class _CreditsScreenState extends State<CreditsScreen>
   late final Animation<double> _bgScale;
   late final Animation<double> _logoOpacity;
   late final Animation<double> _logoScale;
-  late final Animation<double> _cardOpacity;
-  late final Animation<Offset> _cardSlide;
-  late final Animation<double> _cardScale;
+  late final Animation<double> _partnersOpacity;
+  late final Animation<Offset> _partnersSlide;
   late final Animation<double> _footerOpacity;
   late final Animation<Offset> _footerSlide;
   late final Animation<double> _glowPulse;
@@ -79,23 +77,17 @@ class _CreditsScreenState extends State<CreditsScreen>
       ),
     );
 
-    _cardOpacity = CurvedAnimation(
+    _partnersOpacity = CurvedAnimation(
       parent: _introCtrl,
-      curve: const Interval(0.32, 0.68, curve: Curves.easeOut),
+      curve: const Interval(0.36, 0.72, curve: Curves.easeOut),
     );
-    _cardSlide = Tween<Offset>(
-      begin: const Offset(0, 0.18),
+    _partnersSlide = Tween<Offset>(
+      begin: const Offset(0, 0.12),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(
         parent: _introCtrl,
-        curve: const Interval(0.32, 0.72, curve: Curves.easeOutCubic),
-      ),
-    );
-    _cardScale = Tween<double>(begin: 0.94, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _introCtrl,
-        curve: const Interval(0.32, 0.72, curve: Curves.easeOutCubic),
+        curve: const Interval(0.36, 0.75, curve: Curves.easeOutCubic),
       ),
     );
 
@@ -104,7 +96,7 @@ class _CreditsScreenState extends State<CreditsScreen>
       curve: const Interval(0.58, 0.95, curve: Curves.easeOut),
     );
     _footerSlide = Tween<Offset>(
-      begin: const Offset(0, 0.3),
+      begin: const Offset(0, 0.22),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(
@@ -113,7 +105,7 @@ class _CreditsScreenState extends State<CreditsScreen>
       ),
     );
 
-    _glowPulse = Tween<double>(begin: 0.38, end: 0.55).animate(
+    _glowPulse = Tween<double>(begin: 0.28, end: 0.42).animate(
       CurvedAnimation(parent: _glowCtrl, curve: Curves.easeInOut),
     );
 
@@ -184,17 +176,19 @@ class _CreditsScreenState extends State<CreditsScreen>
                 ),
               ),
             ),
+            // Soft top wash for gold logo; light bottom lift for white copy only
             DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.white.withValues(alpha: 0.10),
+                    Colors.white.withValues(alpha: 0.08),
                     Colors.transparent,
-                    Colors.black.withValues(alpha: 0.32),
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.38),
                   ],
-                  stops: const [0, 0.42, 1],
+                  stops: const [0, 0.28, 0.58, 1],
                 ),
               ),
             ),
@@ -207,7 +201,7 @@ class _CreditsScreenState extends State<CreditsScreen>
                       constraints:
                           BoxConstraints(minHeight: constraints.maxHeight),
                       child: Padding(
-                        padding: EdgeInsets.fromLTRB(24, 16, 24, 52 + bottom),
+                        padding: EdgeInsets.fromLTRB(20, 12, 20, 10 + bottom),
                         child: IntrinsicHeight(
                           child: Column(
                             children: [
@@ -222,7 +216,7 @@ class _CreditsScreenState extends State<CreditsScreen>
                                         AppNav.popOr(context, '/profile'),
                                   ),
                                 ),
-                              SizedBox(height: h * 0.12),
+                              SizedBox(height: h * 0.10),
                               FadeTransition(
                                 opacity: _logoOpacity,
                                 child: ScaleTransition(
@@ -234,8 +228,8 @@ class _CreditsScreenState extends State<CreditsScreen>
                                         animation: _glowPulse,
                                         builder: (context, child) {
                                           return Container(
-                                            width: 200,
-                                            height: 110,
+                                            width: 190,
+                                            height: 100,
                                             decoration: BoxDecoration(
                                               borderRadius:
                                                   BorderRadius.circular(90),
@@ -245,8 +239,8 @@ class _CreditsScreenState extends State<CreditsScreen>
                                                       .withValues(
                                                     alpha: _glowPulse.value,
                                                   ),
-                                                  blurRadius: 48,
-                                                  spreadRadius: 14,
+                                                  blurRadius: 40,
+                                                  spreadRadius: 10,
                                                 ),
                                               ],
                                             ),
@@ -258,26 +252,22 @@ class _CreditsScreenState extends State<CreditsScreen>
                                   ),
                                 ),
                               ),
+                              // Open middle — photo stays the hero (CEO mock)
                               const Spacer(),
                               FadeTransition(
-                                opacity: _cardOpacity,
+                                opacity: _partnersOpacity,
                                 child: SlideTransition(
-                                  position: _cardSlide,
-                                  child: ScaleTransition(
-                                    scale: _cardScale,
-                                    child: const _PartnersGlassCard(),
-                                  ),
+                                  position: _partnersSlide,
+                                  child: const _PartnersRow(),
                                 ),
                               ),
-                              const SizedBox(height: 28),
+                              const SizedBox(height: 14),
                               FadeTransition(
                                 opacity: _footerOpacity,
                                 child: SlideTransition(
                                   position: _footerSlide,
                                   child: Column(
                                     children: [
-                                      const _GoldLeafDivider(),
-                                      const SizedBox(height: 16),
                                       Text(
                                         'Application développée dans le cadre du projet SAWN,\n'
                                         'avec le soutien du Fonds Équipe France et du ministère\n'
@@ -285,16 +275,27 @@ class _CreditsScreenState extends State<CreditsScreen>
                                         textAlign: TextAlign.center,
                                         style: AppFonts.dmSans(
                                           color: Colors.white,
-                                          fontSize: 11,
-                                          height: 1.5,
+                                          fontSize: 11.5,
+                                          height: 1.45,
                                           fontWeight: FontWeight.w400,
                                           fontStyle: FontStyle.italic,
+                                        ).copyWith(
+                                          shadows: const [
+                                            Shadow(
+                                              color: Color(0x66000000),
+                                              blurRadius: 8,
+                                              offset: Offset(0, 1),
+                                            ),
+                                          ],
                                         ),
                                       ),
+                                      const SizedBox(height: 12),
+                                      const _MeliesWordmark(),
                                     ],
                                   ),
                                 ),
                               ),
+                              SizedBox(height: 6),
                             ],
                           ),
                         ),
@@ -311,14 +312,56 @@ class _CreditsScreenState extends State<CreditsScreen>
   }
 }
 
-class _PartnersGlassCard extends StatefulWidget {
-  const _PartnersGlassCard();
+/// Méliès mark flanked by short gold rules (left / right).
+class _MeliesWordmark extends StatelessWidget {
+  const _MeliesWordmark();
 
   @override
-  State<_PartnersGlassCard> createState() => _PartnersGlassCardState();
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: const [
+        _MeliesRule(),
+        SizedBox(width: 12),
+        MeliesLogo(height: 32),
+        SizedBox(width: 12),
+        _MeliesRule(),
+      ],
+    );
+  }
 }
 
-class _PartnersGlassCardState extends State<_PartnersGlassCard>
+class _MeliesRule extends StatelessWidget {
+  const _MeliesRule();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 28,
+      height: 1.2,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(1),
+        gradient: LinearGradient(
+          colors: [
+            AppColors.gold.withValues(alpha: 0.15),
+            AppColors.gold.withValues(alpha: 0.95),
+            AppColors.gold.withValues(alpha: 0.15),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Partner marks float on the photo — no glass card (matches reference).
+class _PartnersRow extends StatefulWidget {
+  const _PartnersRow();
+
+  @override
+  State<_PartnersRow> createState() => _PartnersRowState();
+}
+
+class _PartnersRowState extends State<_PartnersRow>
     with SingleTickerProviderStateMixin {
   late final AnimationController _staggerCtrl;
   late final List<Animation<double>> _logoOpacities;
@@ -333,7 +376,7 @@ class _PartnersGlassCardState extends State<_PartnersGlassCard>
     );
 
     _logoOpacities = List.generate(3, (i) {
-      final start = 0.15 + i * 0.18;
+      final start = 0.1 + i * 0.16;
       final end = (start + 0.35).clamp(0.0, 1.0);
       return CurvedAnimation(
         parent: _staggerCtrl,
@@ -341,9 +384,9 @@ class _PartnersGlassCardState extends State<_PartnersGlassCard>
       );
     });
     _logoScales = List.generate(3, (i) {
-      final start = 0.15 + i * 0.18;
+      final start = 0.1 + i * 0.16;
       final end = (start + 0.4).clamp(0.0, 1.0);
-      return Tween<double>(begin: 0.82, end: 1.0).animate(
+      return Tween<double>(begin: 0.86, end: 1.0).animate(
         CurvedAnimation(
           parent: _staggerCtrl,
           curve: Interval(start, end, curve: Curves.easeOutBack),
@@ -351,8 +394,7 @@ class _PartnersGlassCardState extends State<_PartnersGlassCard>
       );
     });
 
-    // Start after the glass card begins its own entrance.
-    Future<void>.delayed(const Duration(milliseconds: 480), () {
+    Future<void>.delayed(const Duration(milliseconds: 420), () {
       if (mounted) _staggerCtrl.forward();
     });
   }
@@ -365,75 +407,78 @@ class _PartnersGlassCardState extends State<_PartnersGlassCard>
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 22),
-          decoration: BoxDecoration(
-            color: const Color(0xFFB8D4E0).withValues(alpha: 0.55),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.65),
-              width: 1.2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.10),
-                blurRadius: 28,
-                offset: const Offset(0, 10),
-              ),
-            ],
+    Widget logo(int i, Widget child) {
+      return Expanded(
+        child: FadeTransition(
+          opacity: _logoOpacities[i],
+          child: ScaleTransition(
+            scale: _logoScales[i],
+            child: child,
           ),
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: FadeTransition(
-                    opacity: _logoOpacities[0],
-                    child: ScaleTransition(
-                      scale: _logoScales[0],
-                      child: const _LogoCell(
-                        asset: AppAssets.logoAmbassade,
-                        height: 68,
-                        label: 'Ambassade de France en Tunisie',
-                      ),
-                    ),
-                  ),
-                ),
-                _GoldVDivider(),
-                Expanded(
-                  child: FadeTransition(
-                    opacity: _logoOpacities[1],
-                    child: ScaleTransition(
-                      scale: _logoScales[1],
-                      child: const _LogoCell(
-                        asset: AppAssets.logoInstitutFrancais,
-                        height: 56,
-                        label: 'Institut Français Tunisie',
-                      ),
-                    ),
-                  ),
-                ),
-                _GoldVDivider(),
-                Expanded(
-                  child: FadeTransition(
-                    opacity: _logoOpacities[2],
-                    child: ScaleTransition(
-                      scale: _logoScales[2],
-                      child: const _LogoCell(
-                        asset: AppAssets.logoSawn,
-                        height: 72,
-                        label: 'SAWN',
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: SizedBox(
+        height: 88,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            logo(
+              0,
+              const _LogoCell(
+                asset: AppAssets.logoAmbassade,
+                height: 78,
+                label: 'Ambassade de France en Tunisie',
+              ),
             ),
+            const _PartnerDivider(),
+            logo(
+              1,
+              const _LogoCell(
+                asset: AppAssets.logoInstitutFrancais,
+                height: 64,
+                label: 'Institut Français Tunisie',
+              ),
+            ),
+            const _PartnerDivider(),
+            logo(
+              2,
+              const _LogoCell(
+                asset: AppAssets.logoSawn,
+                height: 80,
+                label: 'SAWN',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Thin vertical rule between partner marks (CEO partenaires mock).
+class _PartnerDivider extends StatelessWidget {
+  const _PartnerDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
+      child: Container(
+        width: 1.5,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(1),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.gold.withValues(alpha: 0.2),
+              AppColors.gold.withValues(alpha: 0.95),
+              AppColors.gold.withValues(alpha: 0.2),
+            ],
           ),
         ),
       ),
@@ -458,7 +503,7 @@ class _LogoCell extends StatelessWidget {
       label: label,
       image: true,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 6),
         child: Center(
           child: Image.asset(
             asset,
@@ -467,52 +512,11 @@ class _LogoCell extends StatelessWidget {
             errorBuilder: (_, __, ___) => Text(
               label,
               textAlign: TextAlign.center,
-              style: AppFonts.dmSans(fontSize: 9, color: AppColors.navy),
+              style: AppFonts.dmSans(fontSize: 9, color: Colors.white),
             ),
           ),
         ),
       ),
-    );
-  }
-}
-
-class _GoldVDivider extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Container(
-        width: 1,
-        color: AppColors.gold.withValues(alpha: 0.7),
-      ),
-    );
-  }
-}
-
-class _GoldLeafDivider extends StatelessWidget {
-  const _GoldLeafDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            height: 1.2,
-            color: AppColors.gold.withValues(alpha: 0.85),
-          ),
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Icon(Icons.eco_rounded, size: 20, color: AppColors.gold),
-        ),
-        Expanded(
-          child: Container(
-            height: 1.2,
-            color: AppColors.gold.withValues(alpha: 0.85),
-          ),
-        ),
-      ],
     );
   }
 }
