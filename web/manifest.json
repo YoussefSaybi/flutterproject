@@ -3,7 +3,7 @@
     "short_name": "ecoar_kerkennah",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#FFFFFF",
+    "background_color": "#04363F",
     "theme_color": "#C9A227",
     "description": "A new Flutter project.",
     "orientation": "portrait-primary",

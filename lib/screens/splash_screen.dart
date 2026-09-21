@@ -235,16 +235,16 @@ class _SplashScreenState extends State<SplashScreen>
                                 animation: _glowPulse,
                                 builder: (context, child) {
                                   return Container(
-                                    width: 160,
-                                    height: 90,
+                                    width: 175,
+                                    height: 98,
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(80),
+                                      borderRadius: BorderRadius.circular(85),
                                       boxShadow: [
                                         BoxShadow(
                                           color: Colors.white.withValues(
                                             alpha: _glowPulse.value,
                                           ),
-                                          blurRadius: 48,
+                                          blurRadius: 50,
                                           spreadRadius: 12,
                                         ),
                                       ],
@@ -252,7 +252,7 @@ class _SplashScreenState extends State<SplashScreen>
                                   );
                                 },
                               ),
-                              const EcoLogo(height: 112),
+                              const EcoLogo(height: 122),
                             ],
                           ),
                         ),
@@ -290,21 +290,19 @@ class _SplashScreenState extends State<SplashScreen>
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const MeliesLogo(height: 128),
-                          Transform.translate(
-                            offset: const Offset(0, -10),
-                            child: Text(
-                              'SOCIÉTÉ DE PRODUCTION',
-                              textAlign: TextAlign.center,
-                              style: AppFonts.dmSans(
-                                color: const Color(0xFFF2F0EA),
-                                fontSize: 13,
-                                letterSpacing: 3.0,
-                                fontWeight: FontWeight.w500,
-                                height: 1.0,
-                              ),
+                          Text(
+                            'DÉVELOPPÉE PAR',
+                            textAlign: TextAlign.center,
+                            style: AppFonts.dmSans(
+                              color: const Color(0xFFF2F0EA),
+                              fontSize: 13,
+                              letterSpacing: 3.0,
+                              fontWeight: FontWeight.w500,
+                              height: 1.0,
                             ),
                           ),
+                          const SizedBox(height: 6),
+                          const MeliesLogo(height: 128),
                         ],
                       ),
                     ),

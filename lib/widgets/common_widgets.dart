@@ -527,32 +527,53 @@ class AppSearchField extends StatelessWidget {
   }
 
   Widget _fallbackField() {
-    return TextField(
-      readOnly: onTap != null,
-      onTap: onTap,
-      style: AppFonts.dmSans(color: AppColors.navy),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: AppFonts.dmSans(
-          color: AppColors.textSecondary.withValues(alpha: 0.75),
-        ),
-        prefixIcon: const PackIcon(AppAssets.iconSearch, size: 22),
-        suffixIcon: const PackIcon(AppAssets.iconFilter, size: 22),
-        filled: true,
-        fillColor: AppColors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppLayout.radiusPill),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppLayout.radiusPill),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppLayout.radiusPill),
-          borderSide: const BorderSide(color: AppColors.navy, width: 1.2),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppLayout.radiusPill),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TextField(
+        readOnly: onTap != null,
+        onTap: onTap,
+        style: AppFonts.dmSans(color: AppColors.navy),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: AppFonts.dmSans(
+            color: AppColors.textSecondary.withValues(alpha: 0.7),
+            fontSize: 14,
+          ),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            color: AppColors.primaryTeal.withValues(alpha: 0.75),
+            size: 24,
+          ),
+          suffixIcon: Icon(
+            Icons.tune_rounded,
+            color: AppColors.primaryTeal.withValues(alpha: 0.75),
+            size: 22,
+          ),
+          filled: true,
+          fillColor: AppColors.white,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppLayout.radiusPill),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppLayout.radiusPill),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppLayout.radiusPill),
+            borderSide: const BorderSide(color: AppColors.navy, width: 1.2),
+          ),
         ),
       ),
     );

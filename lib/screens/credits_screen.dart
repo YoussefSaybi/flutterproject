@@ -228,26 +228,26 @@ class _CreditsScreenState extends State<CreditsScreen>
                                         animation: _glowPulse,
                                         builder: (context, child) {
                                           return Container(
-                                            width: 190,
-                                            height: 100,
+                                            width: 175,
+                                            height: 98,
                                             decoration: BoxDecoration(
                                               borderRadius:
-                                                  BorderRadius.circular(90),
+                                                  BorderRadius.circular(85),
                                               boxShadow: [
                                                 BoxShadow(
                                                   color: Colors.white
                                                       .withValues(
                                                     alpha: _glowPulse.value,
                                                   ),
-                                                  blurRadius: 40,
-                                                  spreadRadius: 10,
+                                                  blurRadius: 50,
+                                                  spreadRadius: 12,
                                                 ),
                                               ],
                                             ),
                                           );
                                         },
                                       ),
-                                      const EcoLogo(height: 108),
+                                      const EcoLogo(height: 122),
                                     ],
                                   ),
                                 ),
@@ -261,37 +261,31 @@ class _CreditsScreenState extends State<CreditsScreen>
                                   child: const _PartnersRow(),
                                 ),
                               ),
-                              const SizedBox(height: 14),
+                              const SizedBox(height: 28),
                               FadeTransition(
                                 opacity: _footerOpacity,
                                 child: SlideTransition(
                                   position: _footerSlide,
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        'Application développée dans le cadre du projet SAWN,\n'
-                                        'avec le soutien du Fonds Équipe France et du ministère\n'
-                                        'de l\'Europe et des Affaires étrangères.',
-                                        textAlign: TextAlign.center,
-                                        style: AppFonts.dmSans(
-                                          color: Colors.white,
-                                          fontSize: 11.5,
-                                          height: 1.45,
-                                          fontWeight: FontWeight.w400,
-                                          fontStyle: FontStyle.italic,
-                                        ).copyWith(
-                                          shadows: const [
-                                            Shadow(
-                                              color: Color(0x66000000),
-                                              blurRadius: 8,
-                                              offset: Offset(0, 1),
-                                            ),
-                                          ],
+                                  child: Text(
+                                    'Application développée dans le cadre du projet SAWN,\n'
+                                    'avec le soutien du Fonds Équipe France et du ministère\n'
+                                    'de l\'Europe et des Affaires étrangères.',
+                                    textAlign: TextAlign.center,
+                                    style: AppFonts.dmSans(
+                                      color: Colors.white,
+                                      fontSize: 11.5,
+                                      height: 1.45,
+                                      fontWeight: FontWeight.w400,
+                                      fontStyle: FontStyle.italic,
+                                    ).copyWith(
+                                      shadows: const [
+                                        Shadow(
+                                          color: Color(0x66000000),
+                                          blurRadius: 8,
+                                          offset: Offset(0, 1),
                                         ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      const _MeliesWordmark(),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -305,47 +299,6 @@ class _CreditsScreenState extends State<CreditsScreen>
                 },
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Méliès mark flanked by short gold rules (left / right).
-class _MeliesWordmark extends StatelessWidget {
-  const _MeliesWordmark();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: const [
-        _MeliesRule(),
-        SizedBox(width: 12),
-        MeliesLogo(height: 32),
-        SizedBox(width: 12),
-        _MeliesRule(),
-      ],
-    );
-  }
-}
-
-class _MeliesRule extends StatelessWidget {
-  const _MeliesRule();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 28,
-      height: 1.2,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(1),
-        gradient: LinearGradient(
-          colors: [
-            AppColors.gold.withValues(alpha: 0.15),
-            AppColors.gold.withValues(alpha: 0.95),
-            AppColors.gold.withValues(alpha: 0.15),
           ],
         ),
       ),

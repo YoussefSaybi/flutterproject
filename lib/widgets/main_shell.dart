@@ -22,50 +22,58 @@ class MainShell extends StatelessWidget {
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: Material(
-        color: AppColors.cream,
+        color: Colors.white,
         elevation: 0,
-        child: SafeArea(
-          top: false,
-          child: SizedBox(
-            height: 64,
-            child: Row(
-              children: [
-                _NavItem(
-                  icon: Icons.home_rounded,
-                  outlineIcon: Icons.home_outlined,
-                  label: 'Accueil',
-                  selected: index == 0,
-                  onTap: () => _onTap(0),
-                ),
-                _NavItem(
-                  icon: Icons.map_rounded,
-                  outlineIcon: Icons.map_outlined,
-                  label: 'Carte',
-                  selected: index == 1,
-                  onTap: () => _onTap(1),
-                ),
-                _NavItem(
-                  icon: Icons.alt_route_rounded,
-                  outlineIcon: Icons.alt_route_rounded,
-                  label: 'Parcours',
-                  selected: index == 2,
-                  onTap: () => _onTap(2),
-                ),
-                _NavItem(
-                  icon: Icons.qr_code_scanner_rounded,
-                  outlineIcon: Icons.qr_code_scanner_rounded,
-                  label: 'Scanner',
-                  selected: index == 3,
-                  onTap: () => _onTap(3),
-                ),
-                _NavItem(
-                  icon: Icons.person_rounded,
-                  outlineIcon: Icons.person_outline_rounded,
-                  label: 'Profil',
-                  selected: index == 4,
-                  onTap: () => _onTap(4),
-                ),
-              ],
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              top: BorderSide(color: Color(0xFFE8E6E0), width: 1),
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: SizedBox(
+              height: 64,
+              child: Row(
+                children: [
+                  _NavItem(
+                    icon: Icons.home_rounded,
+                    outlineIcon: Icons.home_outlined,
+                    label: 'Accueil',
+                    selected: index == 0,
+                    onTap: () => _onTap(0),
+                  ),
+                  _NavItem(
+                    icon: Icons.map_rounded,
+                    outlineIcon: Icons.map_outlined,
+                    label: 'Carte',
+                    selected: index == 1,
+                    onTap: () => _onTap(1),
+                  ),
+                  _NavItem(
+                    icon: Icons.alt_route_rounded,
+                    outlineIcon: Icons.alt_route_rounded,
+                    label: 'Parcours',
+                    selected: index == 2,
+                    onTap: () => _onTap(2),
+                  ),
+                  _NavItem(
+                    icon: Icons.qr_code_scanner_rounded,
+                    outlineIcon: Icons.qr_code_scanner_rounded,
+                    label: 'Scanner',
+                    selected: index == 3,
+                    onTap: () => _onTap(3),
+                  ),
+                  _NavItem(
+                    icon: Icons.person_rounded,
+                    outlineIcon: Icons.person_outline_rounded,
+                    label: 'Profil',
+                    selected: index == 4,
+                    onTap: () => _onTap(4),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -91,7 +99,7 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.gold : AppColors.navy;
+    final color = selected ? AppColors.gold : const Color(0xFF5A6A76);
     return Expanded(
       child: InkWell(
         onTap: onTap,

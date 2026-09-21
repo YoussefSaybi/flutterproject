@@ -8,7 +8,8 @@ import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../widgets/common_widgets.dart';
 
-/// Accueil — matches CEO Home mock exactly.
+/// Accueil — CEO mock (image 2): cream canvas, centered gold logo,
+/// pill search, map with floating controls, parcours card + dots.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -36,103 +37,83 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final parcours = MockData.parcours;
     final top = MediaQuery.paddingOf(context).top;
-    final size = MediaQuery.sizeOf(context);
-    // Tall teal header + large logo — same as Mes favoris.
-    final headerH = top + size.height * 0.20;
+    final headerH = top + 112.0;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFFDFBF4),
       body: Column(
         children: [
-          // ── Teal header: large left logo + AR/FR/EN ──
+          // ── Teal header: centered logo + lang top-right ──
           SizedBox(
             height: headerH,
             width: double.infinity,
             child: ColoredBox(
-              color: const Color(0xFF123F4A),
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(20, top + 4, 16, 16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Image.asset(
-                          AppAssets.logoGold,
-                          height: 92,
-                          fit: BoxFit.contain,
-                          alignment: Alignment.centerLeft,
-                          errorBuilder: (_, __, ___) => Text(
-                            'EcoAR',
-                            style: AppFonts.playfair(
-                              fontSize: 34,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.gold,
-                            ),
+              color: AppColors.primaryTeal,
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: top + 8,
+                    bottom: 14,
+                    child: Center(
+                      child: Image.asset(
+                        AppAssets.logoGold,
+                        height: 78,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Text(
+                          'EcoAR',
+                          style: AppFonts.playfair(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.gold,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    const _HomeLangSwitcher(),
-                  ],
-                ),
+                  ),
+                  Positioned(
+                    top: top + 14,
+                    right: 16,
+                    child: const _HomeLangSwitcher(),
+                  ),
+                ],
               ),
             ),
           ),
 
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+              padding: const EdgeInsets.fromLTRB(20, 22, 20, 28),
               children: [
-                // Welcome + Méliès
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Bienvenue à Kerkennah',
-                            style: AppFonts.playfair(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF123F4A),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Explorez le patrimoine culturel des îles autrement',
-                            style: AppFonts.dmSans(
-                              color: const Color(0xFF5B6670),
-                              height: 1.4,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.only(top: 2, left: 8),
-                      child: MeliesLogo(height: 36),
-                    ),
-                  ],
+                Text(
+                  'Bienvenue à Kerkennah',
+                  style: AppFonts.playfair(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primaryTeal,
+                    height: 1.15,
+                  ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
+                Text(
+                  'Explorez le patrimoine culturel des îles autrement',
+                  style: AppFonts.dmSans(
+                    color: const Color(0xFF6B7A86),
+                    height: 1.45,
+                    fontSize: 14.5,
+                  ),
+                ),
+                const SizedBox(height: 20),
 
-                // Search
                 AppSearchField(onTap: () => AppNav.goMap(context)),
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
 
-                // Interactive map
                 _HomeMap(onOpenMap: () => AppNav.goMap(context)),
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
 
-                // Recommended parcours carousel (horizontal cards)
                 SizedBox(
-                  height: 168,
+                  height: 176,
                   child: PageView.builder(
                     controller: _pageController,
                     itemCount: parcours.length,
@@ -148,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 PageDots(
                   count: parcours.length.clamp(1, 4),
                   index: _cardPage.clamp(0, parcours.length - 1),
@@ -183,9 +164,10 @@ class _HomeLangSwitcher extends StatelessWidget {
           padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
+            color: AppColors.primaryTeal.withValues(alpha: 0.35),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.85),
-              width: 1.2,
+              color: Colors.white.withValues(alpha: 0.55),
+              width: 1,
             ),
           ),
           child: Row(
@@ -194,14 +176,15 @@ class _HomeLangSwitcher extends StatelessWidget {
               for (final lang in langs)
                 GestureDetector(
                   onTap: () => LocaleController.instance.setCode(lang),
-                  child: Container(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
                     padding:
                         const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                     decoration: BoxDecoration(
                       color: lang == current
-                          ? const Color(0xFFC9A227)
+                          ? AppColors.gold
                           : Colors.transparent,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       lang,
@@ -209,8 +192,8 @@ class _HomeLangSwitcher extends StatelessWidget {
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: lang == current
-                            ? const Color(0xFF123F4A)
-                            : Colors.white,
+                            ? AppColors.primaryTeal
+                            : Colors.white.withValues(alpha: 0.92),
                       ),
                     ),
                   ),
@@ -232,28 +215,97 @@ class _HomeMap extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onOpenMap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: AspectRatio(
-          // Tall map like the CEO home mock.
-          aspectRatio: 1.15,
-          child: Image.asset(
-            AppAssets.bgMap,
-            fit: BoxFit.cover,
-            alignment: Alignment.center,
-            errorBuilder: (_, __, ___) => Container(
-              color: const Color(0xFF7EC8D4),
-              alignment: Alignment.center,
-              child: Text(
-                'Carte Kerkennah',
-                style: AppFonts.dmSans(
-                  color: const Color(0xFF123F4A),
-                  fontWeight: FontWeight.w700,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(22),
+          child: AspectRatio(
+            // Landscape Kerkennah islands map asset (~1024×657).
+            aspectRatio: 1.45,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.asset(
+                  AppAssets.bgMap,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: const Color(0xFF7EC8D4),
+                    alignment: Alignment.center,
+                    child: Text(
+                      'Carte Kerkennah',
+                      style: AppFonts.dmSans(
+                        color: AppColors.primaryTeal,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                // Floating map controls — vertical pill (CEO mock)
+                Positioned(
+                  right: 12,
+                  bottom: 14,
+                  child: Material(
+                    color: Colors.white,
+                    elevation: 3,
+                    shadowColor: Colors.black26,
+                    borderRadius: BorderRadius.circular(14),
+                    child: SizedBox(
+                      width: 42,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _MapCtrlIcon(
+                            icon: Icons.near_me_rounded,
+                            onTap: onOpenMap,
+                          ),
+                          const Divider(height: 1, thickness: 1),
+                          _MapCtrlIcon(
+                            icon: Icons.add_rounded,
+                            onTap: onOpenMap,
+                          ),
+                          const Divider(height: 1, thickness: 1),
+                          _MapCtrlIcon(
+                            icon: Icons.remove_rounded,
+                            onTap: onOpenMap,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _MapCtrlIcon extends StatelessWidget {
+  const _MapCtrlIcon({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: SizedBox(
+        height: 40,
+        child: Icon(icon, size: 20, color: AppColors.primaryTeal),
       ),
     );
   }
@@ -273,115 +325,106 @@ class _RecommendedCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.07),
+            blurRadius: 16,
+            offset: const Offset(0, 5),
           ),
         ],
-        border: Border.all(color: const Color(0xFFECEAE4)),
       ),
       clipBehavior: Clip.antiAlias,
       child: Row(
         children: [
-          // Left thumbnail
-          SizedBox(
-            width: 118,
-            child: Image.asset(
-              parcours.imageAsset,
-              fit: BoxFit.cover,
-              height: double.infinity,
-              errorBuilder: (_, __, ___) => Container(
-                color: const Color(0xFFE8E4DC),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 10, 0, 10),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: SizedBox(
+                width: 108,
+                child: Image.asset(
+                  parcours.imageAsset,
+                  fit: BoxFit.cover,
+                  width: 108,
+                  height: 156,
+                  errorBuilder: (_, __, ___) =>
+                      Container(width: 108, height: 156, color: const Color(0xFFE8E4DC)),
+                ),
               ),
             ),
           ),
-          // Right content
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Parcours recommandé',
                     style: AppFonts.dmSans(
-                      color: const Color(0xFFC9A227),
+                      color: AppColors.gold,
                       fontWeight: FontWeight.w700,
                       fontSize: 11,
+                      letterSpacing: 0.2,
                     ),
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 4),
                   Text(
                     parcours.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppFonts.dmSans(
-                      fontSize: 14,
+                    style: AppFonts.playfair(
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF123F4A),
+                      color: AppColors.primaryTeal,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Row(
                     children: [
                       const Icon(
                         Icons.place_outlined,
-                        size: 13,
-                        color: Color(0xFF5B6670),
+                        size: 14,
+                        color: Color(0xFF6B7A86),
                       ),
-                      const SizedBox(width: 2),
+                      const SizedBox(width: 3),
                       Text(
                         '${parcours.places} lieux',
                         style: AppFonts.dmSans(
-                          fontSize: 11,
-                          color: const Color(0xFF5B6670),
+                          fontSize: 11.5,
+                          color: const Color(0xFF6B7A86),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 12),
                       const Icon(
                         Icons.schedule_rounded,
-                        size: 13,
-                        color: Color(0xFF5B6670),
+                        size: 14,
+                        color: Color(0xFF6B7A86),
                       ),
-                      const SizedBox(width: 2),
+                      const SizedBox(width: 3),
                       Text(
                         parcours.duration,
                         style: AppFonts.dmSans(
-                          fontSize: 11,
-                          color: const Color(0xFF5B6670),
+                          fontSize: 11.5,
+                          color: const Color(0xFF6B7A86),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Expanded(
-                    child: Text(
-                      parcours.subtitle,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppFonts.dmSans(
-                        fontSize: 11,
-                        height: 1.3,
-                        color: const Color(0xFF5B6670),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
+                  const Spacer(),
                   SizedBox(
                     width: double.infinity,
-                    height: 34,
+                    height: 38,
                     child: ElevatedButton(
                       onPressed: onDiscover,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF123F4A),
+                        backgroundColor: AppColors.primaryTeal,
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: Row(
@@ -393,7 +436,7 @@ class _RecommendedCard extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: AppFonts.dmSans(
-                                fontSize: 11,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),

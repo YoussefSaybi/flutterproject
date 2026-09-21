@@ -265,13 +265,13 @@ class _OnboardingPage2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    // Map stone QR plaque from source image (911×1920) through BoxFit.cover.
+    // Map QR modules on tower plaque (onboarding_scan.jpg 576×1024) via cover.
     final scanRect = _mapCoverRect(
       screen: size,
       imageSize: const Size(576, 1024),
-      // QR code only on tower plaque (onboarding_scan.jpg)
-      sourceRect: const Rect.fromLTWH(398, 502, 56, 56),
-      pad: 0.1,
+      // Tight frame on the QR only (not the EcoAR wordmark below).
+      sourceRect: const Rect.fromLTWH(391, 499, 55, 55),
+      pad: 0.05,
     );
 
     return Stack(
@@ -280,6 +280,21 @@ class _OnboardingPage2 extends StatelessWidget {
         KenBurnsBackground(
           asset: AppAssets.bgOnboardingScan,
           active: active,
+          // Keep AR corners in the same Ken Burns space as the photo.
+          overlays: [
+            Positioned(
+              left: scanRect.left,
+              top: scanRect.top,
+              width: scanRect.width,
+              height: scanRect.height,
+              child: IgnorePointer(
+                child: PulsingScanFrame(
+                  active: active,
+                  child: const _ArScanCorners(),
+                ),
+              ),
+            ),
+          ],
         ),
         // Soft top wash for logo + Passer readability
         DecoratedBox(
@@ -292,19 +307,6 @@ class _OnboardingPage2 extends StatelessWidget {
                 Colors.transparent,
               ],
               stops: const [0.0, 0.35],
-            ),
-          ),
-        ),
-        // AR corners locked to the QR code only
-        Positioned(
-          left: scanRect.left,
-          top: scanRect.top,
-          width: scanRect.width,
-          height: scanRect.height,
-          child: IgnorePointer(
-            child: PulsingScanFrame(
-              active: active,
-              child: const _ArScanCorners(),
             ),
           ),
         ),

@@ -92,11 +92,14 @@ class KenBurnsBackground extends StatefulWidget {
     required this.asset,
     required this.active,
     this.alignment = Alignment.center,
+    /// Drawn in the same cover + Ken Burns space as [asset] (e.g. QR frame).
+    this.overlays = const <Widget>[],
   });
 
   final String asset;
   final bool active;
   final Alignment alignment;
+  final List<Widget> overlays;
 
   @override
   State<KenBurnsBackground> createState() => _KenBurnsBackgroundState();
@@ -152,13 +155,19 @@ class _KenBurnsBackgroundState extends State<KenBurnsBackground>
               child: Transform.scale(
                 scale: scale,
                 alignment: Alignment.center,
-                child: Image.asset(
-                  widget.asset,
-                  fit: BoxFit.cover,
-                  alignment: widget.alignment,
-                  gaplessPlayback: true,
-                  width: double.infinity,
-                  height: double.infinity,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset(
+                      widget.asset,
+                      fit: BoxFit.cover,
+                      alignment: widget.alignment,
+                      gaplessPlayback: true,
+                      width: double.infinity,
+                      height: double.infinity,
+                    ),
+                    ...widget.overlays,
+                  ],
                 ),
               ),
             ),
