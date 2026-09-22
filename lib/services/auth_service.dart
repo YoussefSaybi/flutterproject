@@ -10,6 +10,7 @@ class AppUser {
     required this.password,
     this.phone = '',
     this.city = '',
+    this.photoPath,
   });
 
   final String name;
@@ -17,6 +18,8 @@ class AppUser {
   final String password;
   final String phone;
   final String city;
+  /// Optional local asset or file path for the visitor profile photo.
+  final String? photoPath;
 
   AppUser copyWith({
     String? name,
@@ -24,6 +27,8 @@ class AppUser {
     String? password,
     String? phone,
     String? city,
+    String? photoPath,
+    bool clearPhoto = false,
   }) {
     return AppUser(
       name: name ?? this.name,
@@ -31,6 +36,7 @@ class AppUser {
       password: password ?? this.password,
       phone: phone ?? this.phone,
       city: city ?? this.city,
+      photoPath: clearPhoto ? null : (photoPath ?? this.photoPath),
     );
   }
 }
@@ -39,11 +45,11 @@ class AppUser {
 class AuthService extends ChangeNotifier {
   AuthService._() {
     _users[_normalize(demoEmail)] = const AppUser(
-      name: 'Mohamed Azmi',
+      name: 'Emna El Abed',
       email: demoEmail,
       password: demoPassword,
       phone: '+216 24 349 288',
-      city: 'Sfax, Tunisie',
+      city: 'Kerkennah, Sfax',
     );
   }
 
@@ -203,12 +209,14 @@ class AuthService extends ChangeNotifier {
   }
 
   AuthResult continueAsGuest({required String provider}) {
-    final email =
-        provider == 'apple' ? 'apple@ecoar.tn' : 'google@ecoar.tn';
+    final email = provider == 'apple'
+        ? 'apple@ecoar.tn'
+        : 'emna.el.abed.dev@gmail.com';
     _current = AppUser(
-      name: provider == 'apple' ? 'Utilisateur Apple' : 'Utilisateur Google',
+      name: provider == 'apple' ? 'Utilisateur Apple' : 'Emna El Abed',
       email: email,
       password: '',
+      city: provider == 'apple' ? '' : 'Kerkennah, Sfax',
     );
     notifyListeners();
     // ignore: unawaited_futures
@@ -222,6 +230,15 @@ class AuthService extends ChangeNotifier {
     final user = _users[key];
     if (user != null) {
       _current = user;
+    } else if (key == 'google@ecoar.tn' ||
+        key == 'emna.el.abed.dev@gmail.com') {
+      _current = const AppUser(
+        name: 'Emna El Abed',
+        email: 'emna.el.abed.dev@gmail.com',
+        password: '',
+        city: 'Kerkennah, Sfax',
+      );
+      _users[_normalize(_current!.email)] = _current!;
     } else {
       _current = AppUser(
         name: email.split('@').first,
@@ -251,6 +268,8 @@ class AuthService extends ChangeNotifier {
     String? email,
     String? phone,
     String? city,
+    String? photoPath,
+    bool clearPhoto = false,
   }) {
     final cur = _current;
     if (cur == null) return;
@@ -259,6 +278,8 @@ class AuthService extends ChangeNotifier {
       email: email,
       phone: phone,
       city: city,
+      photoPath: photoPath,
+      clearPhoto: clearPhoto,
     );
     _users.remove(_normalize(cur.email));
     _users[_normalize(updated.email)] = updated;

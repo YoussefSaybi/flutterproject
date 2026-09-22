@@ -168,6 +168,9 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
+    _glowCtrl.stop();
+    _introCtrl.stop();
+    _fadeCtrl.stop();
     _fadeCtrl.dispose();
     _introCtrl.dispose();
     _glowCtrl.dispose();

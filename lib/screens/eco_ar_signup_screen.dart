@@ -8,6 +8,7 @@ import '../theme/app_assets.dart';
 import '../theme/app_fonts.dart';
 import '../utils/form_validators.dart';
 import '../widgets/advanced_field_validation.dart';
+import '../widgets/app_toast.dart';
 import '../widgets/auth_error_popup.dart';
 import '../widgets/auth_micro_interactions.dart';
 
@@ -72,20 +73,16 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
   }
 
   void _onTerms() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Conditions d'utilisation — bientôt disponible."),
-        behavior: SnackBarBehavior.floating,
-      ),
+    AppToast.info(
+      context,
+      "Conditions d'utilisation — bientôt disponible.",
     );
   }
 
   void _onPrivacy() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Politique de confidentialité — bientôt disponible.'),
-        behavior: SnackBarBehavior.floating,
-      ),
+    AppToast.info(
+      context,
+      'Politique de confidentialité — bientôt disponible.',
     );
   }
 

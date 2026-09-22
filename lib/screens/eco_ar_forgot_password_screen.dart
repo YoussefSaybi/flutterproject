@@ -6,6 +6,8 @@ import '../services/auth_service.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_fonts.dart';
 import '../utils/form_validators.dart';
+import '../widgets/advanced_field_validation.dart';
+import '../widgets/app_toast.dart';
 import '../widgets/auth_micro_interactions.dart';
 
 /// EcoAR Kerkennah — forgot password (email → code → new password).
@@ -18,7 +20,6 @@ class EcoArForgotPasswordScreen extends StatefulWidget {
 }
 
 class _EcoArForgotPasswordScreenState extends State<EcoArForgotPasswordScreen> {
-  static const _navy = Color(0xFF1B4A5A);
   static const _cream = Color(0xFFFAF7F0);
 
   final _emailFormKey = GlobalKey<FormState>();
@@ -35,13 +36,23 @@ class _EcoArForgotPasswordScreenState extends State<EcoArForgotPasswordScreen> {
   bool _obscure = true;
   bool _obscureConfirm = true;
   int _passwordScore = 0;
+  String _emailLive = '';
+  String _codeLive = '';
+  String _passwordLive = '';
+  String _confirmLive = '';
 
   @override
   void initState() {
     super.initState();
+    _email.addListener(() => setState(() => _emailLive = _email.text));
+    _code.addListener(() => setState(() => _codeLive = _code.text));
+    _confirm.addListener(() => setState(() => _confirmLive = _confirm.text));
     _password.addListener(() {
       final s = FormValidators.passwordStrength(_password.text);
-      if (s != _passwordScore) setState(() => _passwordScore = s);
+      setState(() {
+        _passwordLive = _password.text;
+        if (s != _passwordScore) _passwordScore = s;
+      });
     });
   }
 
@@ -69,13 +80,7 @@ class _EcoArForgotPasswordScreenState extends State<EcoArForgotPasswordScreen> {
       _step = 1;
       _submitted = false;
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(result.message),
-        backgroundColor: _navy,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    AppToast.info(context, result.message);
   }
 
   Future<void> _resetPassword() async {
@@ -95,18 +100,14 @@ class _EcoArForgotPasswordScreenState extends State<EcoArForgotPasswordScreen> {
     if (!mounted) return;
     setState(() => _loading = false);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(result.message),
-        backgroundColor: result.success ? _navy : const Color(0xFF8B2E2E),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
     if (result.success) {
+      AppToast.success(context, result.message);
       setState(() {
         _step = 2;
         _submitted = false;
       });
+    } else {
+      AppToast.error(context, result.message);
     }
   }
 
@@ -188,6 +189,7 @@ class _EcoArForgotPasswordScreenState extends State<EcoArForgotPasswordScreen> {
                             key: const ValueKey('email'),
                             formKey: _emailFormKey,
                             email: _email,
+                            emailLive: _emailLive,
                             submitted: _submitted,
                             loading: _loading,
                             onSubmit: _sendCode,
@@ -201,6 +203,9 @@ class _EcoArForgotPasswordScreenState extends State<EcoArForgotPasswordScreen> {
                                 code: _code,
                                 password: _password,
                                 confirm: _confirm,
+                                codeLive: _codeLive,
+                                passwordLive: _passwordLive,
+                                confirmLive: _confirmLive,
                                 submitted: _submitted,
                                 loading: _loading,
                                 obscure: _obscure,
@@ -234,6 +239,7 @@ class _EmailStep extends StatelessWidget {
     super.key,
     required this.formKey,
     required this.email,
+    required this.emailLive,
     required this.submitted,
     required this.loading,
     required this.onSubmit,
@@ -242,6 +248,7 @@ class _EmailStep extends StatelessWidget {
 
   final GlobalKey<FormState> formKey;
   final TextEditingController email;
+  final String emailLive;
   final bool submitted;
   final bool loading;
   final VoidCallback onSubmit;
@@ -289,7 +296,16 @@ class _EmailStep extends StatelessWidget {
             autofillHints: const [AutofillHints.email],
             validator: FormValidators.email,
             onFieldSubmitted: (_) => onSubmit(),
+            showValidBorder: FormValidators.email(emailLive) == null &&
+                emailLive.trim().isNotEmpty,
           ),
+          if (emailLive.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            ValidationRulesPanel(
+              title: 'Contrôle email',
+              rules: emailRules(emailLive),
+            ),
+          ],
           const SizedBox(height: 22),
           _PrimaryButton(
             label: 'Envoyer le code',
@@ -317,6 +333,9 @@ class _ResetStep extends StatelessWidget {
     required this.code,
     required this.password,
     required this.confirm,
+    required this.codeLive,
+    required this.passwordLive,
+    required this.confirmLive,
     required this.submitted,
     required this.loading,
     required this.obscure,
@@ -333,6 +352,9 @@ class _ResetStep extends StatelessWidget {
   final TextEditingController code;
   final TextEditingController password;
   final TextEditingController confirm;
+  final String codeLive;
+  final String passwordLive;
+  final String confirmLive;
   final bool submitted;
   final bool loading;
   final bool obscure;
@@ -347,6 +369,16 @@ class _ResetStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final codeOk = RegExp(r'^\d{6}$').hasMatch(codeLive.trim());
+    final passwordOk =
+        FormValidators.password(passwordLive) == null && passwordLive.isNotEmpty;
+    final confirmOk = FormValidators.confirmPassword(
+              confirmLive,
+              passwordLive,
+            ) ==
+            null &&
+        confirmLive.isNotEmpty;
+
     return Form(
       key: formKey,
       autovalidateMode: submitted
@@ -394,7 +426,15 @@ class _ResetStep extends StatelessWidget {
               }
               return null;
             },
+            showValidBorder: codeOk,
           ),
+          if (codeLive.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            ValidationRulesPanel(
+              title: 'Contrôle code',
+              rules: resetCodeRules(codeLive),
+            ),
+          ],
           const SizedBox(height: 14),
           _PillField(
             controller: password,
@@ -404,16 +444,25 @@ class _ResetStep extends StatelessWidget {
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.newPassword],
             validator: FormValidators.password,
+            showValidBorder: passwordOk,
             suffix: AuthBounceIconButton(
+              tooltip: obscure
+                  ? 'Afficher le mot de passe'
+                  : 'Masquer le mot de passe',
               onPressed: onToggleObscure,
               icon: obscure
                   ? Icons.visibility_outlined
                   : Icons.visibility_off_outlined,
             ),
           ),
-          if (password.text.isNotEmpty) ...[
+          if (passwordLive.isNotEmpty) ...[
             const SizedBox(height: 8),
             _StrengthBar(score: passwordScore),
+            const SizedBox(height: 8),
+            ValidationRulesPanel(
+              title: 'Contrôle mot de passe',
+              rules: passwordRules(passwordLive),
+            ),
           ],
           const SizedBox(height: 14),
           _PillField(
@@ -425,13 +474,24 @@ class _ResetStep extends StatelessWidget {
             onFieldSubmitted: (_) => onSubmit(),
             validator: (v) =>
                 FormValidators.confirmPassword(v, password.text),
+            showValidBorder: confirmOk,
             suffix: AuthBounceIconButton(
+              tooltip: obscureConfirm
+                  ? 'Afficher le mot de passe'
+                  : 'Masquer le mot de passe',
               onPressed: onToggleConfirm,
               icon: obscureConfirm
                   ? Icons.visibility_outlined
                   : Icons.visibility_off_outlined,
             ),
           ),
+          if (confirmLive.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            ValidationRulesPanel(
+              title: 'Contrôle confirmation',
+              rules: confirmPasswordRules(confirmLive, passwordLive),
+            ),
+          ],
           const SizedBox(height: 22),
           _PrimaryButton(
             label: 'Réinitialiser',
@@ -545,6 +605,7 @@ class _PillField extends StatefulWidget {
     this.onFieldSubmitted,
     this.autofillHints,
     this.inputFormatters,
+    this.showValidBorder = false,
   });
 
   final TextEditingController controller;
@@ -558,6 +619,7 @@ class _PillField extends StatefulWidget {
   final void Function(String)? onFieldSubmitted;
   final Iterable<String>? autofillHints;
   final List<TextInputFormatter>? inputFormatters;
+  final bool showValidBorder;
 
   @override
   State<_PillField> createState() => _PillFieldState();
@@ -566,6 +628,7 @@ class _PillField extends StatefulWidget {
 class _PillFieldState extends State<_PillField> {
   static const _navy = Color(0xFF1B4A5A);
   static const _border = Color(0xFFD8E3E8);
+  static const _valid = Color(0xFF2F7A4A);
 
   late final FocusNode _focus = FocusNode();
   bool _focused = false;
@@ -585,8 +648,31 @@ class _PillFieldState extends State<_PillField> {
     super.dispose();
   }
 
+  Widget? _buildSuffix() {
+    if (!widget.showValidBorder && widget.suffix == null) return null;
+    if (widget.suffix == null) {
+      return const Icon(Icons.check_circle_rounded, color: _valid, size: 22);
+    }
+    if (!widget.showValidBorder) return widget.suffix;
+    return SizedBox(
+      width: 88,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          const Icon(Icons.check_circle_rounded, color: _valid, size: 20),
+          widget.suffix!,
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final borderColor = widget.showValidBorder
+        ? _valid
+        : (_focused ? _navy : _border);
+    final borderWidth = (widget.showValidBorder || _focused) ? 1.6 : 1.0;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOutCubic,
@@ -609,10 +695,11 @@ class _PillFieldState extends State<_PillField> {
         keyboardType: widget.keyboardType,
         textInputAction: widget.textInputAction,
         autofillHints: widget.autofillHints,
-        inputFormatters: widget.inputFormatters,
+        inputFormatters: widget.inputFormatters ??
+            [FilteringTextInputFormatter.deny(RegExp(r'[\n\r]'))],
         validator: widget.validator,
         onFieldSubmitted: widget.onFieldSubmitted,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
+        autovalidateMode: AutovalidateMode.disabled,
         style: AppFonts.dmSans(fontSize: 15, color: _navy),
         decoration: InputDecoration(
           hintText: widget.hint,
@@ -624,31 +711,38 @@ class _PillFieldState extends State<_PillField> {
             icon: widget.prefix,
             focused: _focused,
           ),
-          suffixIcon: widget.suffix,
+          suffixIcon: _buildSuffix(),
           filled: true,
           fillColor: Colors.white,
-          errorMaxLines: 2,
+          errorStyle: const TextStyle(height: 0, fontSize: 0),
+          errorMaxLines: 1,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: _border),
+            borderSide: BorderSide(color: borderColor, width: borderWidth),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: _border),
+            borderSide: BorderSide(color: borderColor, width: borderWidth),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: _navy, width: 1.6),
+            borderSide: BorderSide(
+              color: widget.showValidBorder ? _valid : _navy,
+              width: 1.6,
+            ),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: Color(0xFF8B2E2E)),
+            borderSide: BorderSide(color: borderColor, width: borderWidth),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: Color(0xFF8B2E2E), width: 1.4),
+            borderSide: BorderSide(
+              color: widget.showValidBorder ? _valid : _navy,
+              width: 1.6,
+            ),
           ),
         ),
       ),

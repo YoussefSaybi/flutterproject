@@ -37,7 +37,7 @@ class _PressableScaleState extends State<PressableScale>
   ).animate(CurvedAnimation(
     parent: _c,
     curve: Curves.easeOutCubic,
-    reverseCurve: Curves.elasticOut,
+    reverseCurve: Curves.easeOutCubic,
   ));
 
   @override
@@ -238,12 +238,14 @@ class _AuthSocialButtonState extends State<AuthSocialButton>
       .animate(CurvedAnimation(
     parent: _press,
     curve: Curves.easeOutCubic,
-    reverseCurve: Curves.elasticOut,
+    reverseCurve: Curves.easeOutCubic,
   ));
+  // Never pair TweenSequence with overshooting curves (easeOutBack/elastic) —
+  // they push t outside [0,1] and assert in debug.
   late final Animation<double> _icon = TweenSequence<double>([
     TweenSequenceItem(tween: Tween(begin: 1, end: 1.14), weight: 40),
     TweenSequenceItem(tween: Tween(begin: 1.14, end: 1), weight: 60),
-  ]).animate(CurvedAnimation(parent: _press, curve: Curves.easeOutBack));
+  ]).animate(CurvedAnimation(parent: _press, curve: Curves.easeOutCubic));
 
   bool get _enabled => widget.onPressed != null;
 
@@ -359,9 +361,11 @@ class _AuthAnimatedIconState extends State<AuthAnimatedIcon>
     return AnimatedBuilder(
       animation: _c,
       builder: (context, _) {
-        final t = Curves.easeOutBack.transform(_c.value);
+        // easeOutBack overshoots; clamp for Color.lerp, keep soft scale pop.
+        final raw = Curves.easeOutBack.transform(_c.value);
+        final t = raw.clamp(0.0, 1.0);
         return Transform.scale(
-          scale: 1 + (0.12 * t),
+          scale: 1 + (0.12 * raw.clamp(0.0, 1.35)),
           child: Icon(
             widget.icon,
             size: widget.size,

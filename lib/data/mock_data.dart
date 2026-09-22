@@ -66,14 +66,14 @@ class MockData {
       duration: '2h30',
       places: 5,
       difficulty: 'Facile',
-      imageAsset: AppAssets.bgBoat,
+      imageAsset: AppAssets.bgParcoursMemoire,
       description:
           'Plongez dans l\'histoire maritime des Kerkennah : ports, pêche traditionnelle, savoir-faire et mémoire vivante des îles.',
       steps: [
         ParcoursStep(
           title: 'Charfiya',
           subtitle: 'Les anciens chantiers navals',
-          imageAsset: AppAssets.bgBoat,
+          imageAsset: AppAssets.bgParcoursMemoire,
         ),
         ParcoursStep(
           title: 'Port traditionnel',
@@ -83,7 +83,7 @@ class MockData {
         ParcoursStep(
           title: 'Abbassiya',
           subtitle: 'Histoire et spiritualité',
-          imageAsset: AppAssets.bgVillage,
+          imageAsset: AppAssets.bgAbbassiya,
         ),
         ParcoursStep(
           title: 'Retour au large',

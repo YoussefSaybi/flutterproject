@@ -195,6 +195,15 @@ List<ValidationRule> emailRules(String value) {
   ];
 }
 
+List<ValidationRule> resetCodeRules(String value) {
+  final c = value.trim();
+  return [
+    ValidationRule(label: 'Champ renseigné', ok: c.isNotEmpty),
+    ValidationRule(label: 'Uniquement des chiffres', ok: RegExp(r'^\d*$').hasMatch(c)),
+    ValidationRule(label: 'Exactement 6 chiffres', ok: RegExp(r'^\d{6}$').hasMatch(c)),
+  ];
+}
+
 List<ValidationRule> loginIdentifierRules(String value) {
   final v = value.trim();
   if (v.contains('@') || v.isEmpty) {

@@ -306,6 +306,8 @@ class _AnimatedGoldGlyphState extends State<AnimatedGoldGlyph>
 
   @override
   void dispose() {
+    _press.stop();
+    _pulse.stop();
     _press.dispose();
     _pulse.dispose();
     super.dispose();

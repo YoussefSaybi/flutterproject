@@ -7,6 +7,7 @@ import '../services/auth_service.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
+import '../widgets/app_toast.dart';
 import '../widgets/common_widgets.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -50,13 +51,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _toast(String message, {bool error = true}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: AppFonts.dmSans(color: Colors.white)),
-        backgroundColor: error ? const Color(0xFF8B2E2E) : AppColors.navy,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    if (error) {
+      AppToast.error(context, message);
+    } else {
+      AppToast.success(context, message);
+    }
   }
 
   Future<void> _submit() async {

@@ -1,306 +1,466 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
+import '../l10n/app_strings.dart';
+import '../l10n/locale_controller.dart';
 import '../navigation/app_nav.dart';
 import '../services/auth_service.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
+import '../widgets/app_toast.dart';
+import '../widgets/common_widgets.dart';
+import '../widgets/profile_photo.dart';
 
 /// Profile — teal palm header image + larger white cards (CEO mock).
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final user = AuthService.instance.currentUser;
-    final name = user?.name ?? 'Mohamed Azmi';
-    final email = user?.email ?? 'azmi.heni@gmail.com';
-    final city =
-        (user?.city.isNotEmpty ?? false) ? user!.city : 'Sfax, Tunisie';
-    final top = MediaQuery.paddingOf(context).top;
-    final size = MediaQuery.sizeOf(context);
-    // Tall header so palm shadows read big like the mock.
-    final headerH = top + size.height * 0.28;
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F4EC),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ── Green/teal header = user palm picture ──
-            SizedBox(
-              height: headerH,
-              width: double.infinity,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.asset(
-                    AppAssets.bgProfileHeader,
-                    fit: BoxFit.cover,
-                    // Zoom palms in top-left
-                    alignment: const Alignment(-0.9, -1.0),
-                    errorBuilder: (_, __, ___) => const ColoredBox(
-                      color: Color(0xFF005664),
-                    ),
-                  ),
-                  Positioned(
-                    top: top + 8,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Image.asset(
-                        AppAssets.logoGold,
-                        height: 48,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => Text(
-                          'EcoAR',
-                          style: AppFonts.playfair(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.gold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: top + 10,
-                    right: 18,
-                    child: GestureDetector(
-                      onTap: () => AppNav.openEditProfile(context),
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            width: 1.3,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.settings_outlined,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 22,
-                    bottom: 52,
-                    child: Text(
-                      'Mon profil',
-                      style: AppFonts.playfair(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                        height: 1.05,
-                      ),
-                    ),
-                  ),
-                ],
+class _ProfileScreenState extends State<ProfileScreen> {
+  final _picker = ImagePicker();
+  bool _picking = false;
+
+  Future<void> _showPhotoSheet() async {
+    if (_picking) return;
+    final hasPhoto =
+        (AuthService.instance.currentUser?.photoPath?.isNotEmpty ?? false);
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          margin: const EdgeInsets.fromLTRB(14, 0, 14, 18),
+          padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
+          decoration: BoxDecoration(
+            color: AppColors.cream,
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
-            ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD5CFC4),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              Text(
+                'Photo de profil',
+                style: AppFonts.playfair(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.navy,
+                ),
+              ),
+              const SizedBox(height: 14),
+              ListTile(
+                leading: const Icon(
+                  Icons.photo_camera_outlined,
+                  color: AppColors.navy,
+                ),
+                title: Text(
+                  'Prendre une photo',
+                  style: AppFonts.dmSans(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.navy,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pick(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.photo_library_outlined,
+                  color: AppColors.navy,
+                ),
+                title: Text(
+                  'Choisir depuis la galerie',
+                  style: AppFonts.dmSans(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.navy,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pick(ImageSource.gallery);
+                },
+              ),
+              if (hasPhoto)
+                ListTile(
+                  leading: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: Color(0xFF8B2E2E),
+                  ),
+                  title: Text(
+                    'Supprimer la photo',
+                    style: AppFonts.dmSans(
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF8B2E2E),
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    AuthService.instance.updateProfile(clearPhoto: true);
+                    AppToast.success(context, 'Photo supprimée.');
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-            // ── Larger white widgets ──
-            Transform.translate(
-              offset: const Offset(0, -44),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-                child: Column(
-                  children: [
-                    // Identity card
-                    GestureDetector(
-                      onTap: () => AppNav.openEditProfile(context),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.fromLTRB(16, 18, 12, 18),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(22),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.08),
-                              blurRadius: 18,
-                              offset: const Offset(0, 6),
+  Future<void> _pick(ImageSource source) async {
+    if (_picking) return;
+    setState(() => _picking = true);
+    try {
+      final file = await _picker.pickImage(
+        source: source,
+        maxWidth: 1200,
+        maxHeight: 1200,
+        imageQuality: 88,
+      );
+      if (file == null) {
+        if (mounted) setState(() => _picking = false);
+        return;
+      }
+      final dir = await getApplicationDocumentsDirectory();
+      final photosDir = Directory(p.join(dir.path, 'profile_photos'));
+      if (!await photosDir.exists()) {
+        await photosDir.create(recursive: true);
+      }
+      final ext =
+          p.extension(file.path).isEmpty ? '.jpg' : p.extension(file.path);
+      final dest = p.join(
+        photosDir.path,
+        'avatar_${DateTime.now().millisecondsSinceEpoch}$ext',
+      );
+      await File(file.path).copy(dest);
+      AuthService.instance.updateProfile(photoPath: dest);
+      if (!mounted) return;
+      setState(() => _picking = false);
+      AppToast.success(context, 'Photo mise à jour.');
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _picking = false);
+      AppToast.error(
+        context,
+        source == ImageSource.camera
+            ? 'Impossible d’ouvrir la caméra.'
+            : 'Impossible d’ouvrir la galerie.',
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        LocaleController.instance,
+        AuthService.instance,
+      ]),
+      builder: (context, _) {
+        final s = AppStrings.current;
+        final user = AuthService.instance.currentUser;
+        final name = user?.name ?? 'Emna El Abed';
+        final email = user?.email ?? 'emna.el.abed.dev@gmail.com';
+        final city = (user?.city.isNotEmpty ?? false)
+            ? user!.city
+            : 'Kerkennah, Sfax';
+        final top = MediaQuery.paddingOf(context).top;
+        final headerH = top + 132.0;
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8F4EC),
+          body: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  height: headerH,
+                  width: double.infinity,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      const PalmLeafBackdrop(),
+                      Positioned(
+                        top: top + 6,
+                        right: 96,
+                        child: Image.asset(
+                          AppAssets.logoGold,
+                          height: 78,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => Text(
+                            'EcoAR',
+                            style: AppFonts.playfair(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.gold,
                             ),
-                          ],
+                          ),
                         ),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 68,
-                              height: 68,
-                              child: ClipOval(
+                      ),
+                      Positioned(
+                        left: 22,
+                        bottom: 40,
+                        child: Text(
+                          s.myProfile,
+                          style: AppFonts.playfair(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            height: 1.05,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Transform.translate(
+                  offset: const Offset(0, -36),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          padding:
+                              const EdgeInsets.fromLTRB(16, 18, 28, 18),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(22),
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 18,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              // Avatar + camera — upload works here
+                              SizedBox(
+                                width: 72,
+                                height: 72,
                                 child: Stack(
-                                  fit: StackFit.expand,
-                                  alignment: Alignment.center,
+                                  clipBehavior: Clip.none,
                                   children: [
-                                    Image.asset(
-                                      AppAssets.bgCoast,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) =>
-                                          const ColoredBox(
-                                        color: Color(0xFFD8E3E8),
+                                    Positioned.fill(
+                                      child: GestureDetector(
+                                        onTap: _picking
+                                            ? null
+                                            : _showPhotoSheet,
+                                        child: ClipOval(
+                                          child: ProfilePhoto(
+                                            path: user?.photoPath,
+                                            size: 72,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                    Container(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.18,
+                                    Positioned(
+                                      right: -2,
+                                      bottom: -2,
+                                      child: Material(
+                                        color: AppColors.navy,
+                                        shape: const CircleBorder(),
+                                        elevation: 2,
+                                        child: InkWell(
+                                          customBorder:
+                                              const CircleBorder(),
+                                          onTap: _picking
+                                              ? null
+                                              : _showPhotoSheet,
+                                          child: SizedBox(
+                                            width: 28,
+                                            height: 28,
+                                            child: Icon(
+                                              _picking
+                                                  ? Icons
+                                                      .hourglass_top_rounded
+                                                  : Icons
+                                                      .photo_camera_outlined,
+                                              size: 15,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                    const Icon(
-                                      Icons.person_rounded,
-                                      size: 36,
-                                      color: Colors.white70,
                                     ),
                                   ],
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    name,
-                                    style: AppFonts.playfair(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700,
-                                      color: const Color(0xFF123F4A),
-                                      height: 1.15,
-                                    ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () =>
+                                      AppNav.openEditProfile(context),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        name,
+                                        style: AppFonts.playfair(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF123F4A),
+                                          height: 1.15,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      _InfoLine(
+                                        icon: Icons.mail_outline_rounded,
+                                        text: email,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      _InfoLine(
+                                        icon: Icons.place_outlined,
+                                        text: city,
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(height: 8),
-                                  _InfoLine(
-                                    icon: Icons.mail_outline_rounded,
-                                    text: email,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  _InfoLine(
-                                    icon: Icons.place_outlined,
-                                    text: city,
-                                  ),
-                                ],
+                                ),
                               ),
+                              GestureDetector(
+                                onTap: () =>
+                                    AppNav.openEditProfile(context),
+                                child: const Icon(
+                                  Icons.edit_outlined,
+                                  color: Color(0xFFC9A227),
+                                  size: 22,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            _StatTile(
+                              icon: const Icon(
+                                Icons.place_outlined,
+                                size: 22,
+                                color: Color(0xFFC9A227),
+                              ),
+                              value: '12',
+                              label: s.placesVisited,
                             ),
-                            const Icon(
-                              Icons.chevron_right_rounded,
-                              color: Color(0xFFB0B8BF),
-                              size: 28,
+                            const SizedBox(width: 10),
+                            _StatTile(
+                              icon: const ParcoursPathIcon(
+                                size: 22,
+                                color: Color(0xFFC9A227),
+                              ),
+                              value: '3',
+                              label: s.parcours,
+                              onTap: () => context.go('/parcours'),
+                            ),
+                            const SizedBox(width: 10),
+                            _StatTile(
+                              icon: const Icon(
+                                Icons.favorite_border_rounded,
+                                size: 22,
+                                color: Color(0xFFC9A227),
+                              ),
+                              value: '5',
+                              label: s.favorites,
+                              onTap: () =>
+                                  AppNav.openFavorites(context),
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Stats — larger tiles
-                    Row(
-                      children: [
-                        const _StatTile(
-                          icon: Icons.place_outlined,
-                          value: '12',
-                          label: 'Lieux visités',
-                        ),
-                        const SizedBox(width: 10),
-                        _StatTile(
-                          icon: Icons.alt_route_rounded,
-                          value: '3',
-                          label: 'Parcours',
-                          onTap: () => context.go('/parcours'),
-                        ),
-                        const SizedBox(width: 10),
-                        _StatTile(
-                          icon: Icons.favorite_border_rounded,
-                          value: '5',
-                          label: 'Favoris',
-                          onTap: () => AppNav.openFavorites(context),
+                        const SizedBox(height: 22),
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(22),
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    Colors.black.withValues(alpha: 0.07),
+                                blurRadius: 16,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              _MenuRow(
+                                icon: Icons.favorite_border_rounded,
+                                label: s.myFavorites,
+                                onTap: () =>
+                                    AppNav.openFavorites(context),
+                              ),
+                              const _Hairline(),
+                              _MenuRow(
+                                icon: Icons.map_outlined,
+                                label: s.myParcours,
+                                onTap: () => context.go('/parcours'),
+                              ),
+                              const _Hairline(),
+                              _MenuRow(
+                                icon: Icons.download_outlined,
+                                label: s.myDownloads,
+                                onTap: () {
+                                  AppToast.info(
+                                      context, s.downloadsSoon);
+                                },
+                              ),
+                              const _Hairline(),
+                              _MenuRow(
+                                icon: Icons.settings_outlined,
+                                label: s.settings,
+                                onTap: () =>
+                                    AppNav.openSettings(context),
+                              ),
+                              const _Hairline(),
+                              _MenuRow(
+                                icon: Icons.help_outline_rounded,
+                                label: s.helpSupport,
+                                onTap: () {
+                                  AppToast.info(context, s.helpSoon);
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-
-                    // Space so menu sits lower
-                    const SizedBox(height: 22),
-
-                    // Menu card — bigger rows (Mes favoris / Mes parcours…)
-                    Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(22),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.07),
-                            blurRadius: 16,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          _MenuRow(
-                            icon: Icons.favorite_border_rounded,
-                            label: 'Mes favoris',
-                            onTap: () => AppNav.openFavorites(context),
-                          ),
-                          const _Hairline(),
-                          _MenuRow(
-                            icon: Icons.map_outlined,
-                            label: 'Mes parcours',
-                            onTap: () => context.go('/parcours'),
-                          ),
-                          const _Hairline(),
-                          _MenuRow(
-                            icon: Icons.download_outlined,
-                            label: 'Mes téléchargements',
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Téléchargements — bientôt disponible.',
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            },
-                          ),
-                          const _Hairline(),
-                          _MenuRow(
-                            icon: Icons.settings_outlined,
-                            label: 'Paramètres',
-                            onTap: () => AppNav.openEditProfile(context),
-                          ),
-                          const _Hairline(),
-                          _MenuRow(
-                            icon: Icons.help_outline_rounded,
-                            label: 'Aide & support',
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Aide & support — bientôt disponible.',
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -342,7 +502,7 @@ class _StatTile extends StatelessWidget {
     this.onTap,
   });
 
-  final IconData icon;
+  final Widget icon;
   final String value;
   final String label;
   final VoidCallback? onTap;
@@ -368,7 +528,7 @@ class _StatTile extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Icon(icon, size: 22, color: const Color(0xFFC9A227)),
+              icon,
               const SizedBox(height: 8),
               Text(
                 value,

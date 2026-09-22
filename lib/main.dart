@@ -5,8 +5,9 @@ import 'l10n/locale_controller.dart';
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await LocaleController.instance.load();
   runApp(const EcoArApp());
 }
 
@@ -29,6 +30,10 @@ class EcoArApp extends StatelessWidget {
             Locale('fr'),
             Locale('en'),
             Locale('ar'),
+            Locale('es'),
+            Locale('de'),
+            Locale('pt'),
+            Locale('tr'),
           ],
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,

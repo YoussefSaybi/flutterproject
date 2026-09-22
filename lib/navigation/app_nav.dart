@@ -34,6 +34,9 @@ class AppNav {
   static void openEditProfile(BuildContext context) =>
       context.push('/edit-profile');
 
+  static void openSettings(BuildContext context) =>
+      context.push('/settings');
+
   static void openCredits(BuildContext context) =>
       context.push('/credits?from=menu');
 

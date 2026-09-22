@@ -20,6 +20,12 @@ class AppAssets {
   static const bgCoast = 'assets/bg/coast.jpg';
   static const bgVillage = 'assets/bg/village.jpg';
   static const bgBoat = 'assets/bg/boat.jpg';
+  /// AR light — Charfiya traditionnelle full-bleed scene.
+  static const bgCharfiya = 'assets/bg/charfiya_traditionnelle.jpg';
+  /// Parcours step — Abbassiya marabout on the coast.
+  static const bgAbbassiya = 'assets/bg/abbassiya.jpg';
+  /// Home recommended card — coastal village + boat (CEO mock).
+  static const bgParcoursMemoire = 'assets/bg/parcours_memoire_maritime.jpg';
   /// Onboarding page 1 — CEO mock coastal boat (user-provided).
   static const bgOnboardingBoat = 'assets/bg/onboarding_boat.jpg';
   /// Onboarding page 2 — alley + QR plaque (user-provided).
@@ -34,6 +40,8 @@ class AppAssets {
   static const bgForgotPassword = 'assets/bg/forgot_password_hero.jpg';
   /// Profile header — teal with palm shadow (user asset).
   static const bgProfileHeader = 'assets/bg/profile_header.jpg';
+  /// Scanner — QR plaque on stone pillar (coastal alley).
+  static const bgScanner = 'assets/bg/scanner_qr_plaque.jpg';
   /// Splash / loading alternate full-screen ocean.
   static const bgOceanFull = 'assets/images/bg_ocean_full.jpg';
   static const bgKerkennahHero = bgSignupHero;
@@ -59,7 +67,7 @@ class AppAssets {
   // Component paths unused at runtime (widgets preferred); kept as aliases to icons
   static const searchBar = iconSearch;
   static const profileHeader = iconProfile;
-  static const parcoursCard = bgBoat;
+  static const parcoursCard = bgParcoursMemoire;
   static const audioPlayer = iconPlay;
   static const mapControls = iconNav;
   static const bottomNav = iconHome;
@@ -73,6 +81,18 @@ class AppAssets {
   static const socialApple = iconHome;
   static const passwordField = iconHome;
   static const nameField = iconHome;
+
+  // Bottom nav — custom line icons (teal inactive / gold active, label baked in)
+  static const navAccueil = 'assets/icons/nav/accueil_inactive.png';
+  static const navAccueilActive = 'assets/icons/nav/accueil_active.png';
+  static const navCarte = 'assets/icons/nav/carte_inactive.png';
+  static const navCarteActive = 'assets/icons/nav/carte_active.png';
+  static const navParcours = 'assets/icons/nav/parcours_inactive.png';
+  static const navParcoursActive = 'assets/icons/nav/parcours_active.png';
+  static const navScanner = 'assets/icons/nav/scanner_inactive.png';
+  static const navScannerActive = 'assets/icons/nav/scanner_active.png';
+  static const navProfil = 'assets/icons/nav/profil_inactive.png';
+  static const navProfilActive = 'assets/icons/nav/profil_active.png';
 
   // Nav / UI icons
   static const iconHome = 'assets/icons/01_icon.png';

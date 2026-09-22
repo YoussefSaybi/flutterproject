@@ -17,6 +17,7 @@ import '../screens/parcours_detail_screen.dart';
 import '../screens/parcours_list_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/scanner_screen.dart';
+import '../screens/settings_screen.dart';
 import '../screens/eco_ar_signup_screen.dart';
 import '../screens/splash_screen.dart';
 import '../widgets/main_shell.dart';
@@ -124,6 +125,7 @@ GoRouter createRouter() {
       GoRoute(path: '/audio', builder: (_, __) => const AudioStoryScreen()),
       GoRoute(path: '/ar', builder: (_, __) => const ArLightScreen()),
       GoRoute(path: '/edit-profile', builder: (_, __) => const EditProfileScreen()),
+      GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
       GoRoute(path: '/favorites', builder: (_, __) => const FavoritesScreen()),
       GoRoute(
         path: '/favorites/:id',

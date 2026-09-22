@@ -26,30 +26,35 @@ class _AudioStoryScreenState extends State<AudioStoryScreen> {
       backgroundColor: AppColors.cream,
       body: Column(
         children: [
-          Container(
-            width: double.infinity,
-            color: AppColors.navy,
-            padding: EdgeInsets.fromLTRB(8, top + 6, 8, 10),
-            child: Row(
-              children: [
-                SoftCircleButton(
-                  icon: Icons.arrow_back_ios_new_rounded,
-                  background: AppColors.white.withValues(alpha: 0.15),
-                  foreground: AppColors.white,
-                  size: 40,
-                  onPressed: () => AppNav.popOr(context, '/home'),
+          PalmLeafHeader(
+            child: Positioned.fill(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  top: top + 8,
+                  left: 8,
+                  right: 8,
+                  bottom: 14,
                 ),
-                const Expanded(
-                  child: Center(child: EcoLogo(compact: true, height: 36)),
+                child: Row(
+                  children: [
+                    SoftCircleButton(
+                      icon: Icons.arrow_back_ios_new_rounded,
+                      background: AppColors.white.withValues(alpha: 0.15),
+                      foreground: AppColors.white,
+                      size: 40,
+                      onPressed: () => AppNav.popOr(context, '/home'),
+                    ),
+                    const Spacer(),
+                    SoftCircleButton(
+                      icon: Icons.bookmark_border_rounded,
+                      background: AppColors.white.withValues(alpha: 0.15),
+                      foreground: AppColors.white,
+                      size: 40,
+                      onPressed: () {},
+                    ),
+                  ],
                 ),
-                SoftCircleButton(
-                  icon: Icons.bookmark_border_rounded,
-                  background: AppColors.white.withValues(alpha: 0.15),
-                  foreground: AppColors.white,
-                  size: 40,
-                  onPressed: () {},
-                ),
-              ],
+              ),
             ),
           ),
           Expanded(
@@ -174,23 +179,23 @@ class _AudioStoryScreenState extends State<AudioStoryScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 14),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text(
-                                '1x',
-                                style: AppFonts.dmSans(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14,
-                                  color: AppColors.navy,
-                                ),
+                              _SpeedChip(
+                                label: '1x',
+                                onTap: () {},
                               ),
-                              SoftCircleButton(
-                                asset: AppAssets.iconSkipBack,
-                                background: AppColors.creamDark,
-                                size: 42,
+                              IconButton(
                                 onPressed: () {},
+                                icon: const Icon(
+                                  Icons.skip_previous_rounded,
+                                  color: AppColors.navy,
+                                  size: 30,
+                                ),
+                                visualDensity: VisualDensity.compact,
                               ),
                               SoftCircleButton(
                                 icon: _playing
@@ -202,17 +207,23 @@ class _AudioStoryScreenState extends State<AudioStoryScreen> {
                                 onPressed: () =>
                                     setState(() => _playing = !_playing),
                               ),
-                              SoftCircleButton(
-                                asset: AppAssets.iconSkipForward,
-                                background: AppColors.creamDark,
-                                size: 42,
+                              IconButton(
                                 onPressed: () {},
+                                icon: const Icon(
+                                  Icons.skip_next_rounded,
+                                  color: AppColors.navy,
+                                  size: 30,
+                                ),
+                                visualDensity: VisualDensity.compact,
                               ),
-                              SoftCircleButton(
-                                asset: AppAssets.iconDownload,
-                                background: AppColors.creamDark,
-                                size: 42,
+                              IconButton(
                                 onPressed: () {},
+                                icon: const Icon(
+                                  Icons.download_rounded,
+                                  color: AppColors.navy,
+                                  size: 26,
+                                ),
+                                visualDensity: VisualDensity.compact,
                               ),
                             ],
                           ),
@@ -352,6 +363,76 @@ class _AudioStoryScreenState extends State<AudioStoryScreen> {
       ),
     );
   }
+}
+
+class _SpeedChip extends StatelessWidget {
+  const _SpeedChip({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      customBorder: const CircleBorder(),
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: CustomPaint(
+          painter: _DashedCirclePainter(
+            color: AppColors.navy.withValues(alpha: 0.72),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: AppFonts.dmSans(
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+                color: AppColors.navy,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DashedCirclePainter extends CustomPainter {
+  _DashedCirclePainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round;
+
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.shortestSide / 2) - 1.5;
+    const dashCount = 18;
+    const gapRatio = 0.45;
+    final sweep = (2 * 3.141592653589793) / dashCount;
+    final dashSweep = sweep * (1 - gapRatio);
+
+    for (var i = 0; i < dashCount; i++) {
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        i * sweep - 1.5707963267948966,
+        dashSweep,
+        false,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedCirclePainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 class _Related extends StatelessWidget {

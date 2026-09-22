@@ -383,6 +383,162 @@ class SheetCard extends StatelessWidget {
   }
 }
 
+/// Winding path mark for Parcours (matches brand icon — not Material alt_route).
+class ParcoursPathIcon extends StatelessWidget {
+  const ParcoursPathIcon({
+    super.key,
+    this.size = 24,
+    this.color = AppColors.gold,
+  });
+
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _ParcoursPathPainter(color),
+      ),
+    );
+  }
+}
+
+class _ParcoursPathPainter extends CustomPainter {
+  const _ParcoursPathPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Match Material outlined icons (~1.8px at 22) — thin hairline stroke.
+    final stroke = (size.shortestSide * 0.082).clamp(1.4, 2.0);
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..isAntiAlias = true;
+
+    final w = size.width;
+    final h = size.height;
+    // Horizontal S / switchback with outlined circular terminals.
+    final start = Offset(w * 0.16, h * 0.76);
+    final end = Offset(w * 0.84, h * 0.24);
+    final r = size.shortestSide * 0.11;
+
+    final path = Path()
+      ..moveTo(start.dx + r * 0.55, start.dy)
+      ..lineTo(w * 0.70, h * 0.76)
+      ..cubicTo(w * 0.90, h * 0.76, w * 0.90, h * 0.50, w * 0.70, h * 0.50)
+      ..lineTo(w * 0.30, h * 0.50)
+      ..cubicTo(w * 0.10, h * 0.50, w * 0.10, h * 0.24, w * 0.30, h * 0.24)
+      ..lineTo(end.dx - r * 0.55, end.dy);
+
+    canvas.drawPath(path, paint);
+    canvas.drawCircle(start, r, paint);
+    canvas.drawCircle(end, r, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _ParcoursPathPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+/// Teal backdrop with palm-leaf shadows on both top corners (Profil style).
+class PalmLeafBackdrop extends StatelessWidget {
+  const PalmLeafBackdrop({super.key});
+
+  static Widget _leaf({
+    required Alignment alignment,
+    bool mirror = false,
+  }) {
+    Widget img = Image.asset(
+      AppAssets.bgProfileHeader,
+      fit: BoxFit.cover,
+      alignment: alignment,
+      errorBuilder: (_, __, ___) => const SizedBox.expand(),
+    );
+    if (mirror) {
+      img = Transform(
+        alignment: Alignment.center,
+        transform: Matrix4.diagonal3Values(-1, 1, 1),
+        child: img,
+      );
+    }
+    return img;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const ColoredBox(color: Color(0xFF005664)),
+        // Left palm fronds
+        _leaf(alignment: const Alignment(-0.95, -1.0)),
+        // Mirrored palm fronds on the right
+        _leaf(alignment: const Alignment(-0.95, -1.0), mirror: true),
+      ],
+    );
+  }
+}
+
+/// Shared Accueil-style header: palm-leaf shadow background + centered gold logo.
+class PalmLeafHeader extends StatelessWidget {
+  const PalmLeafHeader({
+    super.key,
+    this.height,
+    this.logoHeight = 78,
+    this.child,
+  });
+
+  /// Total header height including status bar. Defaults to `top + 112`.
+  final double? height;
+  final double logoHeight;
+  /// Optional overlay (e.g. title) drawn above the palm background.
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    final top = MediaQuery.paddingOf(context).top;
+    final headerH = height ?? (top + 112.0);
+
+    return SizedBox(
+      height: headerH,
+      width: double.infinity,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const PalmLeafBackdrop(),
+          Padding(
+            padding: EdgeInsets.only(top: top + 8, bottom: 14),
+            child: Center(
+              child: Image.asset(
+                AppAssets.logoGold,
+                height: logoHeight,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => Text(
+                  'EcoAR',
+                  style: AppFonts.playfair(
+                    fontSize: logoHeight * 0.36,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.gold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (child != null) child!,
+        ],
+      ),
+    );
+  }
+}
+
 /// Teal app header for Pattern B (logo + language or back/settings).
 class TealHeader extends StatelessWidget {
   const TealHeader({
@@ -390,7 +546,7 @@ class TealHeader extends StatelessWidget {
     this.showBack = false,
     this.onBack,
     this.trailing,
-    this.showLanguage = true,
+    this.showLanguage = false,
     this.logoHeight = 40,
   });
 
@@ -459,7 +615,7 @@ class LanguageSwitcher extends StatelessWidget {
     return ListenableBuilder(
       listenable: LocaleController.instance,
       builder: (context, _) {
-        const langs = ['AR', 'FR', 'EN'];
+        const langs = ['AR', 'FR', 'EN', 'ES', 'DE', 'PT', 'TR'];
         final current = selected ?? LocaleController.instance.code;
         final inactive = darkBackground
             ? AppColors.white.withValues(alpha: 0.85)
@@ -580,7 +736,7 @@ class AppSearchField extends StatelessWidget {
   }
 }
 
-class SoftCircleButton extends StatelessWidget {
+class SoftCircleButton extends StatefulWidget {
   const SoftCircleButton({
     super.key,
     required this.onPressed,
@@ -599,26 +755,91 @@ class SoftCircleButton extends StatelessWidget {
   final double size;
 
   @override
+  State<SoftCircleButton> createState() => _SoftCircleButtonState();
+}
+
+class _SoftCircleButtonState extends State<SoftCircleButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _press = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 110),
+    reverseDuration: const Duration(milliseconds: 180),
+  );
+
+  late final Animation<double> _btnScale = Tween<double>(begin: 1, end: 0.90)
+      .animate(CurvedAnimation(parent: _press, curve: Curves.easeOutCubic));
+
+  // Icon pops + rotates slightly while pressed.
+  late final Animation<double> _iconScale = Tween<double>(begin: 1, end: 1.22)
+      .animate(CurvedAnimation(parent: _press, curve: Curves.easeOutCubic));
+  late final Animation<double> _iconTurn = Tween<double>(begin: 0, end: 0.06)
+      .animate(CurvedAnimation(parent: _press, curve: Curves.easeOutCubic));
+
+  @override
+  void dispose() {
+    _press.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: background,
-      shape: const CircleBorder(),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onPressed,
-        child: SizedBox(
-          width: size,
-          height: size,
-          child: Center(
-            child: asset != null
-                ? PackIcon(asset!, size: size * 0.55)
-                : Icon(
-                    icon ?? Icons.circle,
-                    color: foreground,
-                    size: size * 0.45,
+    final iconSize = widget.size * 0.45;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) => _press.forward(),
+      onTapCancel: () => _press.reverse(),
+      onTapUp: (_) async {
+        await _press.reverse();
+        widget.onPressed();
+      },
+      child: AnimatedBuilder(
+        animation: _press,
+        builder: (context, _) {
+          final t = _press.value;
+          final press = 1 - _btnScale.value;
+          final iconColor = Color.lerp(
+            widget.foreground,
+            AppColors.gold,
+            t * 0.85,
+          )!;
+          return Transform.scale(
+            scale: _btnScale.value,
+            child: Container(
+              width: widget.size,
+              height: widget.size,
+              decoration: BoxDecoration(
+                color: widget.background,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.10 + press * 0.06),
+                    blurRadius: 10 + press * 6,
+                    offset: Offset(0, 3 + press * 2),
                   ),
-          ),
-        ),
+                ],
+              ),
+              child: Center(
+                child: Transform.rotate(
+                  angle: _iconTurn.value * 3.14159,
+                  child: Transform.scale(
+                    scale: _iconScale.value,
+                    child: widget.asset != null
+                        ? PackIcon(
+                            widget.asset!,
+                            size: widget.size * 0.55,
+                            color: iconColor,
+                          )
+                        : Icon(
+                            widget.icon ?? Icons.circle,
+                            color: iconColor,
+                            size: iconSize,
+                          ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

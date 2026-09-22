@@ -4,6 +4,7 @@ import '../navigation/app_nav.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
+import '../widgets/app_toast.dart';
 import '../widgets/common_widgets.dart';
 
 class ArLightScreen extends StatelessWidget {
@@ -19,7 +20,7 @@ class ArLightScreen extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(AppAssets.bgBoat, fit: BoxFit.cover),
+          Image.asset(AppAssets.bgCharfiya, fit: BoxFit.cover),
           Positioned(
             top: top + 8,
             left: 12,
@@ -168,15 +169,9 @@ class ArLightScreen extends StatelessWidget {
                   icon: Icons.info_outline_rounded,
                   label: 'À propos',
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'EcoAR Kerkennah — médiation patrimoniale en réalité augmentée.',
-                          style: AppFonts.dmSans(color: AppColors.white),
-                        ),
-                        backgroundColor: AppColors.navy,
-                        behavior: SnackBarBehavior.floating,
-                      ),
+                    AppToast.info(
+                      context,
+                      'EcoAR Kerkennah — médiation patrimoniale en réalité augmentée.',
                     );
                   },
                 ),

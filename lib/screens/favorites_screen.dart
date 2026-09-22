@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/mock_data.dart';
-import '../l10n/locale_controller.dart';
 import '../navigation/app_nav.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
+import '../widgets/common_widgets.dart';
 
 /// Mes favoris — matches CEO Favorites mock exactly.
 class FavoritesScreen extends StatefulWidget {
@@ -39,41 +39,35 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       backgroundColor: const Color(0xFFF8F4EC),
       body: Column(
         children: [
-          // ── Header: large left logo + lang pill on right ──
+          // ── Header: palm-leaf shadow (left + right) + logo ──
           SizedBox(
             height: headerH,
             width: double.infinity,
-            child: ColoredBox(
-              color: const Color(0xFF123F4A),
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(20, top + 4, 16, 16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Image.asset(
-                          AppAssets.logoGold,
-                          height: 92,
-                          fit: BoxFit.contain,
-                          alignment: Alignment.centerLeft,
-                          errorBuilder: (_, __, ___) => Text(
-                            'EcoAR',
-                            style: AppFonts.playfair(
-                              fontSize: 34,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.gold,
-                            ),
-                          ),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                const PalmLeafBackdrop(),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20, top + 4, 16, 16),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Image.asset(
+                      AppAssets.logoGold,
+                      height: 92,
+                      fit: BoxFit.contain,
+                      alignment: Alignment.centerLeft,
+                      errorBuilder: (_, __, ___) => Text(
+                        'EcoAR',
+                        style: AppFonts.playfair(
+                          fontSize: 34,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.gold,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    const _LangSwitcher(),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
 
@@ -114,19 +108,30 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       ),
                       _FilterPill(
                         label: 'Lieux',
-                        icon: Icons.place_outlined,
+                        icon: const Icon(
+                          Icons.place_outlined,
+                          size: 15,
+                          color: Color(0xFF123F4A),
+                        ),
                         selected: _filter == 'lieux',
                         onTap: () => setState(() => _filter = 'lieux'),
                       ),
                       _FilterPill(
                         label: 'Parcours',
-                        icon: Icons.alt_route_rounded,
+                        icon: const ParcoursPathIcon(
+                          size: 15,
+                          color: Color(0xFF123F4A),
+                        ),
                         selected: _filter == 'parcours',
                         onTap: () => setState(() => _filter = 'parcours'),
                       ),
                       _FilterPill(
                         label: 'Récits',
-                        icon: Icons.menu_book_outlined,
+                        icon: const Icon(
+                          Icons.menu_book_outlined,
+                          size: 15,
+                          color: Color(0xFF123F4A),
+                        ),
                         selected: _filter == 'recits',
                         onTap: () => setState(() => _filter = 'recits'),
                       ),
@@ -169,58 +174,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 }
 
-class _LangSwitcher extends StatelessWidget {
-  const _LangSwitcher();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: LocaleController.instance,
-      builder: (context, _) {
-        const langs = ['AR', 'FR', 'EN'];
-        final current = LocaleController.instance.code;
-        return Container(
-          padding: const EdgeInsets.all(3),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.9),
-              width: 1.2,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final lang in langs)
-                GestureDetector(
-                  onTap: () => LocaleController.instance.setCode(lang),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: lang == current
-                          ? const Color(0xFFC9A227)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      lang,
-                      style: AppFonts.dmSans(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
 class _FilterPill extends StatelessWidget {
   const _FilterPill({
     required this.label,
@@ -232,7 +185,7 @@ class _FilterPill extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  final IconData? icon;
+  final Widget? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -260,7 +213,7 @@ class _FilterPill extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (icon != null && !selected) ...[
-                  Icon(icon, size: 15, color: const Color(0xFF123F4A)),
+                  icon!,
                   const SizedBox(width: 5),
                 ],
                 Text(
@@ -419,32 +372,32 @@ class _FavoritesBottomNav extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 64,
+          height: 56,
           child: Row(
             children: [
               _NavItem(
-                icon: Icons.home_outlined,
-                label: 'Accueil',
+                asset: AppAssets.navAccueil,
+                assetActive: AppAssets.navAccueilActive,
                 onTap: () => context.go('/home'),
               ),
               _NavItem(
-                icon: Icons.map_outlined,
-                label: 'Carte',
+                asset: AppAssets.navCarte,
+                assetActive: AppAssets.navCarteActive,
                 onTap: () => context.go('/map'),
               ),
               _NavItem(
-                icon: Icons.alt_route_rounded,
-                label: 'Parcours',
+                asset: AppAssets.navParcours,
+                assetActive: AppAssets.navParcoursActive,
                 onTap: () => context.go('/parcours'),
               ),
               _NavItem(
-                icon: Icons.qr_code_scanner_rounded,
-                label: 'Scanner',
+                asset: AppAssets.navScanner,
+                assetActive: AppAssets.navScannerActive,
                 onTap: () => context.go('/scanner'),
               ),
               _NavItem(
-                icon: Icons.person_rounded,
-                label: 'Profil',
+                asset: AppAssets.navProfil,
+                assetActive: AppAssets.navProfilActive,
                 selected: true,
                 onTap: () => context.go('/profile'),
               ),
@@ -458,38 +411,32 @@ class _FavoritesBottomNav extends StatelessWidget {
 
 class _NavItem extends StatelessWidget {
   const _NavItem({
-    required this.icon,
-    required this.label,
+    required this.asset,
+    required this.assetActive,
     required this.onTap,
     this.selected = false,
   });
 
-  final IconData icon;
-  final String label;
+  final String asset;
+  final String assetActive;
   final VoidCallback onTap;
   final bool selected;
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        selected ? const Color(0xFFC9A227) : const Color(0xFF123F4A);
     return Expanded(
       child: InkWell(
         onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 24, color: color),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: AppFonts.dmSans(
-                fontSize: 11,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                color: color,
-              ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Image.asset(
+              selected ? assetActive : asset,
+              height: 34,
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.high,
             ),
-          ],
+          ),
         ),
       ),
     );

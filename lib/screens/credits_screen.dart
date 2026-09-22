@@ -143,6 +143,9 @@ class _CreditsScreenState extends State<CreditsScreen>
 
   @override
   void dispose() {
+    _glowCtrl.stop();
+    _introCtrl.stop();
+    _fadeCtrl.stop();
     _fadeCtrl.dispose();
     _introCtrl.dispose();
     _glowCtrl.dispose();
