@@ -228,6 +228,42 @@ class AppStrings {
         pt: 'Ajuda e suporte — em breve.',
         tr: 'Yardım ve destek — yakında.',
       );
+  String get logout => _t(
+        fr: 'Déconnexion',
+        en: 'Log out',
+        ar: 'تسجيل الخروج',
+        es: 'Cerrar sesión',
+        de: 'Abmelden',
+        pt: 'Terminar sessão',
+        tr: 'Çıkış yap',
+      );
+  String get logoutConfirmTitle => _t(
+        fr: 'Se déconnecter ?',
+        en: 'Log out?',
+        ar: 'تسجيل الخروج؟',
+        es: '¿Cerrar sesión?',
+        de: 'Abmelden?',
+        pt: 'Terminar sessão?',
+        tr: 'Çıkış yapılsın mı?',
+      );
+  String get logoutConfirmBody => _t(
+        fr: 'Vous serez redirigé vers l’écran de connexion.',
+        en: 'You will be redirected to the login screen.',
+        ar: 'سيتم توجيهك إلى شاشة تسجيل الدخول.',
+        es: 'Serás redirigido a la pantalla de inicio de sesión.',
+        de: 'Sie werden zum Anmeldebildschirm weitergeleitet.',
+        pt: 'Será redirecionado para o ecrã de início de sessão.',
+        tr: 'Giriş ekranına yönlendirileceksiniz.',
+      );
+  String get cancel => _t(
+        fr: 'Annuler',
+        en: 'Cancel',
+        ar: 'إلغاء',
+        es: 'Cancelar',
+        de: 'Abbrechen',
+        pt: 'Cancelar',
+        tr: 'İptal',
+      );
 
   // ── Common ──
   String get back => _t(

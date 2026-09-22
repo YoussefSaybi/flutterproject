@@ -10,7 +10,6 @@ import '../l10n/app_strings.dart';
 import '../l10n/locale_controller.dart';
 import '../navigation/app_nav.dart';
 import '../services/auth_service.dart';
-import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import '../widgets/app_toast.dart';
@@ -189,9 +188,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final city = (user?.city.isNotEmpty ?? false)
             ? user!.city
             : 'Kerkennah, Sfax';
-        final top = MediaQuery.paddingOf(context).top;
-        final headerH = top + 132.0;
-
         return Scaffold(
           backgroundColor: const Color(0xFFF8F4EC),
           body: SingleChildScrollView(
@@ -199,52 +195,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(
-                  height: headerH,
-                  width: double.infinity,
-                  child: Stack(
-                    fit: StackFit.expand,
+                const PalmLeafHeader(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+                  child: Column(
                     children: [
-                      const PalmLeafBackdrop(),
-                      Positioned(
-                        top: top + 6,
-                        right: 96,
-                        child: Image.asset(
-                          AppAssets.logoGold,
-                          height: 78,
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => Text(
-                            'EcoAR',
-                            style: AppFonts.playfair(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.gold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 22,
-                        bottom: 40,
-                        child: Text(
-                          s.myProfile,
-                          style: AppFonts.playfair(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w700,
-                            height: 1.05,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Transform.translate(
-                  offset: const Offset(0, -36),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-                    child: Column(
-                      children: [
                         Container(
                           width: double.infinity,
                           padding:
@@ -449,19 +404,76 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   AppToast.info(context, s.helpSoon);
                                 },
                               ),
+                              const _Hairline(),
+                              _MenuRow(
+                                icon: Icons.logout_rounded,
+                                label: s.logout,
+                                danger: true,
+                                onTap: () => _confirmLogout(context, s),
+                              ),
                             ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
               ],
             ),
           ),
         );
       },
     );
+  }
+
+  Future<void> _confirmLogout(BuildContext context, AppStrings s) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          s.logoutConfirmTitle,
+          style: AppFonts.playfair(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF123F4A),
+          ),
+        ),
+        content: Text(
+          s.logoutConfirmBody,
+          style: AppFonts.dmSans(
+            fontSize: 14,
+            color: const Color(0xFF5B6670),
+            height: 1.45,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              s.cancel,
+              style: AppFonts.dmSans(
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF5B6670),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              s.logout,
+              style: AppFonts.dmSans(
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF8B2E2E),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+    AuthService.instance.logout();
+    context.go('/login');
   }
 }
 
@@ -579,21 +591,24 @@ class _MenuRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    this.danger = false,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final bool danger;
 
   @override
   Widget build(BuildContext context) {
+    final color = danger ? const Color(0xFF8B2E2E) : const Color(0xFF123F4A);
     return InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 17),
         child: Row(
           children: [
-            Icon(icon, size: 24, color: const Color(0xFF123F4A)),
+            Icon(icon, size: 24, color: color),
             const SizedBox(width: 14),
             Expanded(
               child: Text(
@@ -601,14 +616,16 @@ class _MenuRow extends StatelessWidget {
                 style: AppFonts.dmSans(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF123F4A),
+                  color: color,
                 ),
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
               size: 24,
-              color: Color(0xFFB0B8BF),
+              color: danger
+                  ? const Color(0xFF8B2E2E).withValues(alpha: 0.45)
+                  : const Color(0xFFB0B8BF),
             ),
           ],
         ),

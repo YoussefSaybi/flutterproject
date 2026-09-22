@@ -72,12 +72,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 height: 1.15,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 2),
                             Text(
                               'Explorez le patrimoine culturel des îles',
                               style: AppFonts.dmSans(
                                 color: const Color(0xFF6B7A86),
-                                height: 1.45,
+                                height: 1.35,
                                 fontSize: 14.5,
                               ),
                             ),
