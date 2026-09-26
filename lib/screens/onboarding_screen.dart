@@ -52,14 +52,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     } else {
       // ignore: unawaited_futures
       AppSession.instance.completeOnboarding();
-      context.go('/login');
+      context.go('/home');
     }
   }
 
   void _skip() {
     // ignore: unawaited_futures
     AppSession.instance.completeOnboarding();
-    context.go('/login');
+    context.go('/home');
   }
 
   @override

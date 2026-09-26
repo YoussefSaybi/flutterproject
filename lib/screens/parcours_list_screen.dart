@@ -46,7 +46,7 @@ class ParcoursListScreen extends StatelessWidget {
                 right: 14,
                 child: SoftCircleButton(
                   icon: Icons.bookmark_border_rounded,
-                  onPressed: () {},
+                  onPressed: () => AppNav.openSave(context),
                 ),
               ),
               Positioned(

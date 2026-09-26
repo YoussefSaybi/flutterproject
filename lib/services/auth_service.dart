@@ -60,9 +60,19 @@ class AuthService extends ChangeNotifier {
 
   final Map<String, AppUser> _users = {};
   AppUser? _current;
+  /// Profile photo lives independently of login so Accueil + Profil stay synced.
+  String? _photoPath;
 
   AppUser? get currentUser => _current;
   bool get isLoggedIn => _current != null;
+
+  /// Shared avatar path for Accueil header + Profil card.
+  String? get profilePhotoPath {
+    final fromUser = _current?.photoPath;
+    if (fromUser != null && fromUser.isNotEmpty) return fromUser;
+    if (_photoPath != null && _photoPath!.isNotEmpty) return _photoPath;
+    return null;
+  }
 
   static String _normalize(String value) => value.trim().toLowerCase();
 
@@ -104,14 +114,40 @@ class AuthService extends ChangeNotifier {
       }
     }
 
-    if (user == null || user.password != pass) {
-      return AuthResult.fail('Identifiants incorrects.');
+    if (user != null && user.password == pass) {
+      _current = user;
+    } else if (user != null && user.password != pass) {
+      // Demo: any valid password signs in the known account.
+      _current = user.copyWith(password: pass);
+      _users[_normalize(user.email)] = _current!;
+    } else {
+      // Demo: accept any well-formed identifier + password → open session.
+      final isEmail = FormValidators.email(id) == null;
+      final email = isEmail
+          ? id
+          : '${phoneDigits.isEmpty ? 'visiteur' : phoneDigits}@ecoar.tn';
+      final nameFromEmail = email.split('@').first.replaceAll('.', ' ').trim();
+      final displayName = nameFromEmail.isEmpty
+          ? 'Visiteur'
+          : nameFromEmail
+              .split(RegExp(r'\s+'))
+              .where((w) => w.isNotEmpty)
+              .map((w) =>
+                  '${w[0].toUpperCase()}${w.length > 1 ? w.substring(1) : ''}')
+              .join(' ');
+      _current = AppUser(
+        name: displayName,
+        email: email,
+        password: pass,
+        city: 'Kerkennah, Sfax',
+        photoPath: _photoPath,
+      );
+      _users[_normalize(email)] = _current!;
     }
 
-    _current = user;
     notifyListeners();
     // ignore: unawaited_futures
-    AppSession.instance.persistSession(user.email);
+    AppSession.instance.persistSession(_current!.email);
     return AuthResult.ok('Connexion réussie.');
   }
 
@@ -247,7 +283,41 @@ class AuthService extends ChangeNotifier {
       );
       _users[key] = _current!;
     }
+    if (_photoPath != null && _photoPath!.isNotEmpty) {
+      _current = _current!.copyWith(photoPath: _photoPath);
+      _users[_normalize(_current!.email)] = _current!;
+    }
     notifyListeners();
+  }
+
+  /// Apply persisted avatar (works even when not logged in).
+  void restoreProfilePhoto(String? path) {
+    _photoPath = (path != null && path.isNotEmpty) ? path : null;
+    if (_photoPath != null && _current != null) {
+      _current = _current!.copyWith(photoPath: _photoPath);
+      _users[_normalize(_current!.email)] = _current!;
+    }
+    notifyListeners();
+  }
+
+  /// Set / clear profile photo — Accueil + Profil update together.
+  void setProfilePhoto(String? path, {bool clear = false}) {
+    if (clear) {
+      _photoPath = null;
+      if (_current != null) {
+        _current = _current!.copyWith(clearPhoto: true);
+        _users[_normalize(_current!.email)] = _current!;
+      }
+    } else if (path != null && path.isNotEmpty) {
+      _photoPath = path;
+      if (_current != null) {
+        _current = _current!.copyWith(photoPath: path);
+        _users[_normalize(_current!.email)] = _current!;
+      }
+    }
+    notifyListeners();
+    // ignore: unawaited_futures
+    AppSession.instance.persistProfilePhoto(_photoPath);
   }
 
   void logout() {
@@ -271,15 +341,21 @@ class AuthService extends ChangeNotifier {
     String? photoPath,
     bool clearPhoto = false,
   }) {
+    if (clearPhoto || photoPath != null) {
+      setProfilePhoto(photoPath, clear: clearPhoto);
+    }
+
     final cur = _current;
     if (cur == null) return;
+    if (name == null && email == null && phone == null && city == null) {
+      return;
+    }
     final updated = cur.copyWith(
       name: name,
       email: email,
       phone: phone,
       city: city,
-      photoPath: photoPath,
-      clearPhoto: clearPhoto,
+      photoPath: profilePhotoPath,
     );
     _users.remove(_normalize(cur.email));
     _users[_normalize(updated.email)] = updated;

@@ -14,6 +14,12 @@ class AppAssets {
   static const logoMeliesProduction =
       'assets/partners/melies_production_technologies.jpg';
 
+  /// Aide & support page — full lockups (user-provided).
+  static const helpLogoAmbassade = 'assets/partners/help_ambassade.png';
+  static const helpLogoIft = 'assets/partners/help_ift.png';
+  static const helpLogoSawn = 'assets/partners/help_sawn.png';
+  static const helpLogoMelies = 'assets/partners/help_melies.png';
+
   // Compressed photo backgrounds (keeps APK installable on emulator)
   /// CEO splash — rocky cove + marabout (not village_hero / boat quay).
   static const bgSplash = 'assets/bg/splash_cove.jpg';

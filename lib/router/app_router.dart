@@ -8,9 +8,11 @@ import '../screens/credits_screen.dart';
 import '../screens/edit_profile_screen.dart';
 import '../screens/favorite_detail_screen.dart';
 import '../screens/favorites_screen.dart';
+import '../screens/help_support_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/eco_ar_forgot_password_screen.dart';
 import '../screens/eco_ar_login_screen.dart';
+import '../screens/language_select_screen.dart';
 import '../screens/map_screen.dart';
 import '../screens/onboarding_screen.dart';
 import '../screens/parcours_detail_screen.dart';
@@ -20,6 +22,7 @@ import '../screens/scanner_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/eco_ar_signup_screen.dart';
 import '../screens/splash_screen.dart';
+import '../services/app_session.dart';
 import '../widgets/main_shell.dart';
 
 final GlobalKey<NavigatorState> _rootKey = GlobalKey<NavigatorState>();
@@ -45,9 +48,16 @@ CustomTransitionPage<void> _fadePage({
 GoRouter createRouter() {
   return GoRouter(
     navigatorKey: _rootKey,
-    initialLocation: '/',
+    initialLocation: AppSession.instance.initialRoute(),
     routes: [
       GoRoute(path: '/', builder: (_, __) => const SplashScreen()),
+      GoRoute(
+        path: '/language',
+        pageBuilder: (_, state) => _fadePage(
+          key: state.pageKey,
+          child: const LanguageSelectScreen(),
+        ),
+      ),
       GoRoute(
         path: '/credits',
         pageBuilder: (context, state) {
@@ -126,6 +136,13 @@ GoRouter createRouter() {
       GoRoute(path: '/ar', builder: (_, __) => const ArLightScreen()),
       GoRoute(path: '/edit-profile', builder: (_, __) => const EditProfileScreen()),
       GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
+      GoRoute(
+        path: '/help-support',
+        pageBuilder: (_, state) => _fadePage(
+          key: state.pageKey,
+          child: const HelpSupportScreen(),
+        ),
+      ),
       GoRoute(path: '/favorites', builder: (_, __) => const FavoritesScreen()),
       GoRoute(
         path: '/favorites/:id',

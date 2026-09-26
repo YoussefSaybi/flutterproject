@@ -159,7 +159,7 @@ class _VisitorProfileAvatar extends StatelessWidget {
         final user = AuthService.instance.currentUser;
         final name = user?.name.trim() ?? '';
         final initials = _initials(name);
-        final photo = user?.photoPath;
+        final photo = AuthService.instance.profilePhotoPath;
 
         return GestureDetector(
           onTap: () => AppNav.goProfile(context),

@@ -136,6 +136,33 @@ class AppStrings {
         pt: 'Idioma atualizado.',
         tr: 'Dil güncellendi.',
       );
+  String get chooseLanguageTitle => _t(
+        fr: 'Choisissez votre langue',
+        en: 'Choose your language',
+        ar: 'اختر لغتك',
+        es: 'Elige tu idioma',
+        de: 'Wählen Sie Ihre Sprache',
+        pt: 'Escolha o seu idioma',
+        tr: 'Dilinizi seçin',
+      );
+  String get chooseLanguageSubtitle => _t(
+        fr: 'Sélectionnez la langue que vous maîtrisez pour explorer Kerkennah.',
+        en: 'Pick the language you know best to explore Kerkennah.',
+        ar: 'اختر اللغة التي تعرفها لاستكشاف قرقنة.',
+        es: 'Elige el idioma que mejor conoces para explorar Kerkennah.',
+        de: 'Wählen Sie die Sprache, die Sie am besten beherrschen, um Kerkennah zu entdecken.',
+        pt: 'Escolha o idioma que melhor conhece para explorar Kerkennah.',
+        tr: 'Kerkennah’ı keşfetmek için en iyi bildiğiniz dili seçin.',
+      );
+  String get continueAction => _t(
+        fr: 'Continuer',
+        en: 'Continue',
+        ar: 'متابعة',
+        es: 'Continuar',
+        de: 'Weiter',
+        pt: 'Continuar',
+        tr: 'Devam et',
+      );
 
   // ── Profile ──
   String get myProfile => _t(

@@ -3,11 +3,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'l10n/locale_controller.dart';
 import 'router/app_router.dart';
+import 'services/app_session.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LocaleController.instance.load();
+  await AppSession.instance.init();
   runApp(const EcoArApp());
 }
 

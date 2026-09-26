@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../navigation/app_nav.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
-import '../widgets/app_toast.dart';
 import '../widgets/common_widgets.dart';
 
 class ArLightScreen extends StatelessWidget {
@@ -166,14 +166,9 @@ class ArLightScreen extends StatelessWidget {
                   onTap: () => AppNav.popOr(context, '/scanner'),
                 ),
                 _ArNavButton(
-                  icon: Icons.info_outline_rounded,
-                  label: 'À propos',
-                  onTap: () {
-                    AppToast.info(
-                      context,
-                      'EcoAR Kerkennah — médiation patrimoniale en réalité augmentée.',
-                    );
-                  },
+                  icon: Icons.favorite_rounded,
+                  label: 'Favoris',
+                  onTap: () => AppNav.openFavorites(context),
                 ),
               ],
             ),
@@ -209,7 +204,8 @@ class _Tag extends StatelessWidget {
   }
 }
 
-class _ArNavButton extends StatelessWidget {
+/// AR bottom chrome — SoftCircleButton press motion (white icons).
+class _ArNavButton extends StatefulWidget {
   const _ArNavButton({
     required this.icon,
     required this.label,
@@ -223,44 +219,110 @@ class _ArNavButton extends StatelessWidget {
   final bool large;
 
   @override
+  State<_ArNavButton> createState() => _ArNavButtonState();
+}
+
+class _ArNavButtonState extends State<_ArNavButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _press = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 110),
+    reverseDuration: const Duration(milliseconds: 180),
+  );
+
+  late final Animation<double> _btnScale = Tween<double>(begin: 1, end: 0.90)
+      .animate(CurvedAnimation(parent: _press, curve: Curves.easeOutCubic));
+
+  late final Animation<double> _iconScale = Tween<double>(begin: 1, end: 1.22)
+      .animate(CurvedAnimation(parent: _press, curve: Curves.easeOutCubic));
+
+  late final Animation<double> _iconTurn = Tween<double>(begin: 0, end: 0.06)
+      .animate(CurvedAnimation(parent: _press, curve: Curves.easeOutCubic));
+
+  @override
+  void dispose() {
+    _press.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleTap() async {
+    await _press.reverse();
+    if (!mounted) return;
+    HapticFeedback.selectionClick();
+    widget.onTap();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final size = large ? 64.0 : 50.0;
+    final size = widget.large ? 64.0 : 50.0;
+    final iconSize = widget.large ? 28.0 : 22.0;
+
     return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.navy.withValues(alpha: large ? 0.92 : 0.78),
-              border: Border.all(
-                color: AppColors.white.withValues(alpha: 0.22),
-                width: 1.2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.28),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) => _press.forward(),
+      onTapCancel: () => _press.reverse(),
+      onTapUp: (_) => _handleTap(),
+      child: AnimatedBuilder(
+        animation: _press,
+        builder: (context, _) {
+          final press = 1 - _btnScale.value;
+
+          return Transform.scale(
+            scale: _btnScale.value,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: size,
+                  height: size,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.navy.withValues(
+                      alpha: widget.large ? 0.92 : 0.78,
+                    ),
+                    border: Border.all(
+                      color: AppColors.white.withValues(alpha: 0.22),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(
+                          alpha: 0.28 + press * 0.08,
+                        ),
+                        blurRadius: 12 + press * 6,
+                        offset: Offset(0, 4 + press * 2),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Transform.rotate(
+                      angle: _iconTurn.value * 3.14159,
+                      child: Transform.scale(
+                        scale: _iconScale.value,
+                        child: Icon(
+                          widget.icon,
+                          color: AppColors.white,
+                          size: iconSize,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  widget.label,
+                  style: AppFonts.dmSans(
+                    color: AppColors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
-            child: Icon(icon, color: AppColors.white, size: large ? 28 : 22),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: AppFonts.dmSans(
-              color: AppColors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 }
+

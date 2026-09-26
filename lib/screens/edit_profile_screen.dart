@@ -45,7 +45,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _city = TextEditingController(
       text: (user?.city.isNotEmpty ?? false) ? user!.city : 'Kerkennah, Sfax',
     );
-    _photoPath = user?.photoPath;
+    _photoPath = AuthService.instance.profilePhotoPath;
   }
 
   @override

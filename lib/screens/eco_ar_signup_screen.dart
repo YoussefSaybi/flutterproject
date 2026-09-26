@@ -11,6 +11,7 @@ import '../widgets/advanced_field_validation.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/auth_error_popup.dart';
 import '../widgets/auth_micro_interactions.dart';
+import '../widgets/common_widgets.dart';
 
 /// EcoAR Kerkennah sign-up — coastal hero + cream form card (mock layout).
 class EcoArSignUpScreen extends StatefulWidget {
@@ -41,6 +42,8 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
 
   late final TapGestureRecognizer _termsTap;
   late final TapGestureRecognizer _privacyTap;
+
+  String? get _next => GoRouterState.of(context).uri.queryParameters['next'];
 
   @override
   void initState() {
@@ -87,7 +90,7 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
   }
 
   void _onLoginLink() {
-    context.go('/login');
+    AppNav.openLogin(context, next: _next);
   }
 
   Future<void> _onSignUp() async {
@@ -123,7 +126,7 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
     if (!mounted) return;
     setState(() => _loading = false);
     if (result.success) {
-      AppNav.goHome(context);
+      AppNav.finishAuth(context, next: _next);
     } else {
       await showAuthErrorPopup(
         context,
@@ -160,6 +163,17 @@ class _EcoArSignUpScreenState extends State<EcoArSignUpScreen> {
               ),
             ),
           ),
+          Positioned(
+              top: topInset + 8,
+              left: 12,
+              child: SoftCircleButton(
+                icon: Icons.arrow_back_ios_new_rounded,
+                background: Colors.black.withValues(alpha: 0.4),
+                foreground: Colors.white,
+                size: 40,
+                onPressed: () => AppNav.popOr(context, '/home'),
+              ),
+            ),
           Positioned.fill(
             child: SingleChildScrollView(
               padding: EdgeInsets.only(bottom: bottomInset),

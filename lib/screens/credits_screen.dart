@@ -231,8 +231,8 @@ class _CreditsScreenState extends State<CreditsScreen>
                                         animation: _glowPulse,
                                         builder: (context, child) {
                                           return Container(
-                                            width: 175,
-                                            height: 98,
+                                            width: 132,
+                                            height: 74,
                                             decoration: BoxDecoration(
                                               borderRadius:
                                                   BorderRadius.circular(85),
@@ -250,7 +250,7 @@ class _CreditsScreenState extends State<CreditsScreen>
                                           );
                                         },
                                       ),
-                                      const EcoLogo(height: 122),
+                                      const EcoLogo(height: 92),
                                     ],
                                   ),
                                 ),
@@ -270,14 +270,18 @@ class _CreditsScreenState extends State<CreditsScreen>
                                 child: SlideTransition(
                                   position: _footerSlide,
                                   child: Text(
-                                    'Application développée dans le cadre du projet SAWN,\n'
-                                    'avec le soutien du Fonds Équipe France et du ministère\n'
-                                    'de l\'Europe et des Affaires étrangères.',
+                                    'Application réalisée dans le cadre du projet SAWN\n'
+                                    'Le projet SAWN est mis en œuvre par le Service de '
+                                    'Coopération et d’Action Culturelle (SCAC) de '
+                                    'l’Ambassade de France en Tunisie et l’Institut '
+                                    'français de Tunisie, avec le soutien du Fonds '
+                                    'Équipe France (FEF) du ministère de l’Europe et '
+                                    'des Affaires étrangères.',
                                     textAlign: TextAlign.center,
                                     style: AppFonts.dmSans(
                                       color: Colors.white,
-                                      fontSize: 11.5,
-                                      height: 1.45,
+                                      fontSize: 10.5,
+                                      height: 1.4,
                                       fontWeight: FontWeight.w400,
                                       fontStyle: FontStyle.italic,
                                     ).copyWith(
@@ -378,7 +382,7 @@ class _PartnersRowState extends State<_PartnersRow>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: SizedBox(
-        height: 88,
+        height: 140,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -386,8 +390,9 @@ class _PartnersRowState extends State<_PartnersRow>
               0,
               const _LogoCell(
                 asset: AppAssets.logoAmbassade,
-                height: 78,
+                height: 70,
                 label: 'Ambassade de France en Tunisie',
+                keepInk: true,
               ),
             ),
             const _PartnerDivider(),
@@ -395,7 +400,7 @@ class _PartnersRowState extends State<_PartnersRow>
               1,
               const _LogoCell(
                 asset: AppAssets.logoInstitutFrancais,
-                height: 64,
+                height: 78,
                 label: 'Institut Français Tunisie',
               ),
             ),
@@ -404,7 +409,7 @@ class _PartnersRowState extends State<_PartnersRow>
               2,
               const _LogoCell(
                 asset: AppAssets.logoSawn,
-                height: 80,
+                height: 94,
                 label: 'SAWN',
               ),
             ),
@@ -442,35 +447,88 @@ class _PartnerDivider extends StatelessWidget {
   }
 }
 
+/// Partner logo cell.
+/// [keepInk] = soft glow, no color filter (for logos with black text already on transparent).
+/// Default = soft glow + black→transparent (IFT / SAWN style marks).
 class _LogoCell extends StatelessWidget {
   const _LogoCell({
     required this.asset,
     required this.height,
     required this.label,
+    this.keepInk = false,
   });
 
   final String asset;
   final double height;
   final String label;
+  final bool keepInk;
+
+  /// Near-black → transparent; colored pixels stay fully solid.
+  static const _blackToAlpha = ColorFilter.matrix(<double>[
+    1, 0, 0, 0, 0,
+    0, 1, 0, 0, 0,
+    0, 0, 1, 0, 0,
+    3.2, 3.2, 3.2, 0, -0.15,
+  ]);
 
   @override
   Widget build(BuildContext context) {
+    final halo = height * 1.45;
+
+    Widget image = Image.asset(
+      asset,
+      height: height,
+      fit: BoxFit.contain,
+      filterQuality: FilterQuality.high,
+      isAntiAlias: true,
+      errorBuilder: (_, __, ___) => Text(
+        label,
+        textAlign: TextAlign.center,
+        style: AppFonts.dmSans(fontSize: 9, color: Colors.white),
+      ),
+    );
+
+    if (!keepInk) {
+      image = ColorFiltered(
+        colorFilter: _blackToAlpha,
+        child: image,
+      );
+    }
+
     return Semantics(
       label: label,
       image: true,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6),
-        child: Center(
-          child: Image.asset(
-            asset,
-            height: height,
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => Text(
-              label,
-              textAlign: TextAlign.center,
-              style: AppFonts.dmSans(fontSize: 9, color: Colors.white),
+      child: Center(
+        child: Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
+          children: [
+            IgnorePointer(
+              child: Container(
+                width: halo,
+                height: halo,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      Colors.white.withValues(alpha: 0.55),
+                      Colors.white.withValues(alpha: 0.22),
+                      Colors.white.withValues(alpha: 0.0),
+                    ],
+                    stops: const [0.0, 0.55, 1.0],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
+            image,
+          ],
         ),
       ),
     );

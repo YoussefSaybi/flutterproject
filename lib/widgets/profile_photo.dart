@@ -49,9 +49,11 @@ class ProfilePhoto extends StatelessWidget {
       height: size,
       child: Image.file(
         File(path!),
+        key: ValueKey(path),
         fit: BoxFit.cover,
         width: size,
         height: size,
+        gaplessPlayback: true,
         errorBuilder: (_, __, ___) => fallback,
       ),
     );

@@ -31,7 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _showPhotoSheet() async {
     if (_picking) return;
     final hasPhoto =
-        (AuthService.instance.currentUser?.photoPath?.isNotEmpty ?? false);
+        (AuthService.instance.profilePhotoPath?.isNotEmpty ?? false);
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -120,7 +120,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   onTap: () {
                     Navigator.pop(ctx);
-                    AuthService.instance.updateProfile(clearPhoto: true);
+                    AuthService.instance.setProfilePhoto(null, clear: true);
                     AppToast.success(context, 'Photo supprimée.');
                   },
                 ),
@@ -157,7 +157,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'avatar_${DateTime.now().millisecondsSinceEpoch}$ext',
       );
       await File(file.path).copy(dest);
-      AuthService.instance.updateProfile(photoPath: dest);
+      AuthService.instance.setProfilePhoto(dest);
       if (!mounted) return;
       setState(() => _picking = false);
       AppToast.success(context, 'Photo mise à jour.');
@@ -232,7 +232,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             : _showPhotoSheet,
                                         child: ClipOval(
                                           child: ProfilePhoto(
-                                            path: user?.photoPath,
+                                            path: AuthService
+                                                .instance.profilePhotoPath,
                                             size: 72,
                                           ),
                                         ),
@@ -400,9 +401,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               _MenuRow(
                                 icon: Icons.help_outline_rounded,
                                 label: s.helpSupport,
-                                onTap: () {
-                                  AppToast.info(context, s.helpSoon);
-                                },
+                                onTap: () =>
+                                    AppNav.openHelpSupport(context),
                               ),
                               const _Hairline(),
                               _MenuRow(

@@ -67,8 +67,15 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
                         foreground: _isFavorite
                             ? const Color(0xFFC9A227)
                             : AppColors.navy,
-                        onPressed: () =>
-                            setState(() => _isFavorite = !_isFavorite),
+                        onPressed: () {
+                          if (!AppNav.requireAuth(
+                            context,
+                            next: '/favorites/${widget.id}',
+                          )) {
+                            return;
+                          }
+                          setState(() => _isFavorite = !_isFavorite);
+                        },
                       ),
                     ),
                     Positioned(

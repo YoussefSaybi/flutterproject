@@ -10,6 +10,7 @@ import '../utils/form_validators.dart';
 import '../widgets/advanced_field_validation.dart';
 import '../widgets/auth_error_popup.dart';
 import '../widgets/auth_micro_interactions.dart';
+import '../widgets/common_widgets.dart';
 
 /// EcoAR Kerkennah login — hero photo + overlapping cream form card.
 class EcoArLoginScreen extends StatefulWidget {
@@ -30,6 +31,8 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
   bool _loading = false;
   String _idLive = '';
   String _passLive = '';
+
+  String? get _next => GoRouterState.of(context).uri.queryParameters['next'];
 
   @override
   void initState() {
@@ -65,7 +68,7 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
     if (!mounted) return;
     setState(() => _loading = false);
     if (result.success) {
-      AppNav.goHome(context);
+      AppNav.finishAuth(context, next: _next);
     } else {
       await showAuthErrorPopup(
         context,
@@ -86,7 +89,7 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
     AuthService.instance.continueAsGuest(provider: 'Google');
     if (!mounted) return;
     setState(() => _loading = false);
-    AppNav.goHome(context);
+    AppNav.finishAuth(context, next: _next);
   }
 
   Future<void> _onApple() async {
@@ -96,12 +99,11 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
     AuthService.instance.continueAsGuest(provider: 'Apple');
     if (!mounted) return;
     setState(() => _loading = false);
-    AppNav.goHome(context);
+    AppNav.finishAuth(context, next: _next);
   }
 
   void _onSignUp() {
-    // TODO: deep-link / analytics before signup if needed
-    context.go('/signup');
+    AppNav.openSignup(context, next: _next);
   }
 
   @override
@@ -130,6 +132,17 @@ class _EcoArLoginScreenState extends State<EcoArLoginScreen> {
               ),
             ),
           ),
+          Positioned(
+              top: topInset + 8,
+              left: 12,
+              child: SoftCircleButton(
+                icon: Icons.arrow_back_ios_new_rounded,
+                background: Colors.black.withValues(alpha: 0.4),
+                foreground: Colors.white,
+                size: 40,
+                onPressed: () => AppNav.popOr(context, '/home'),
+              ),
+            ),
           Positioned.fill(
             child: SingleChildScrollView(
               padding: EdgeInsets.only(bottom: bottomInset),

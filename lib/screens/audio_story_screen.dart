@@ -50,7 +50,7 @@ class _AudioStoryScreenState extends State<AudioStoryScreen> {
                       background: AppColors.white.withValues(alpha: 0.15),
                       foreground: AppColors.white,
                       size: 40,
-                      onPressed: () {},
+                      onPressed: () => AppNav.openSave(context),
                     ),
                   ],
                 ),

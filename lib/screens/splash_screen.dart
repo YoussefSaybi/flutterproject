@@ -304,8 +304,12 @@ class _SplashScreenState extends State<SplashScreen>
                               height: 1.0,
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          const MeliesLogo(height: 128),
+                          // Pull logo up to cancel transparent padding in the PNG
+                          // (~27% empty space above the glyph), keep a small gap.
+                          Transform.translate(
+                            offset: const Offset(0, -18),
+                            child: const MeliesLogo(height: 100),
+                          ),
                         ],
                       ),
                     ),
